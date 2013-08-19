@@ -19,7 +19,6 @@
 package jp.eisbahn.oauth2.server.models;
 
 import static org.junit.Assert.*;
-import jp.eisbahn.oauth2.server.models.ClientCredential;
 
 import org.junit.Test;
 

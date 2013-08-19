@@ -18,6 +18,8 @@
 
 package jp.eisbahn.oauth2.server.granttype.impl;
 
+import jp.eisbahn.oauth2.server.async.Handler;
+import jp.eisbahn.oauth2.server.exceptions.Try;
 import org.apache.commons.lang3.StringUtils;
 
 import jp.eisbahn.oauth2.server.data.DataHandler;
@@ -29,7 +31,7 @@ import jp.eisbahn.oauth2.server.models.Request;
 /**
  * This class is an implementation for processing the Client Credentials Grant
  * flow of OAuth2.0.
- * 
+ *
  * @author Yoichiro Tanaka
  *
  */
@@ -40,27 +42,53 @@ public class ClientCredentials extends AbstractGrantHandler {
 	 * @see jp.eisbahn.oauth2.server.granttype.GrantHandler#handleRequest(jp.eisbahn.oauth2.server.data.DataHandler)
 	 */
 	@Override
-	public GrantHandlerResult handleRequest(DataHandler dataHandler) throws OAuthError {
-		Request request = dataHandler.getRequest();
+	public void handleRequest(final DataHandler dataHandler, final Handler<Try<OAuthError, GrantHandlerResult>> handler) {
+		final Request request = dataHandler.getRequest();
 
 		ClientCredential clientCredential = getClientCredentialFetcher().fetch(request);
-		String clientId = clientCredential.getClientId();
+		final String clientId = clientCredential.getClientId();
 		String clientSecret = clientCredential.getClientSecret();
 
-		String userId = dataHandler.getClientUserId(clientId, clientSecret);
-		if (StringUtils.isEmpty(userId)) {
-			throw new OAuthError.InvalidClient("");
-		}
+		dataHandler.getClientUserId(clientId, clientSecret, new Handler<String>() {
+			@Override
+			public void handle(String userId) {
+				try {
+					if (StringUtils.isEmpty(userId)) {
+						throw new OAuthError.InvalidClient("");
+					}
 
-		String scope = request.getParameter("scope");
+					String scope = request.getParameter("scope");
 
-		AuthInfo authInfo =
-				dataHandler.createOrUpdateAuthInfo(clientId, userId, scope);
-		if (authInfo == null) {
-			throw new OAuthError.InvalidGrant("");
-		}
+					dataHandler.createOrUpdateAuthInfo(clientId, userId, scope, new Handler<AuthInfo>() {
+						@Override
+						public void handle(AuthInfo authInfo) {
+							try {
+								if (authInfo == null) {
+									throw new OAuthError.InvalidGrant("");
+								}
 
-		return issueAccessToken(dataHandler, authInfo);
+								issueAccessToken(dataHandler, authInfo, new Handler<GrantHandlerResult>() {
+
+									@Override
+									public void handle(GrantHandlerResult result) {
+										if (result != null) {
+											handler.handle(new Try<OAuthError, GrantHandlerResult>(result));
+										} else {
+											handler.handle(new Try<OAuthError, GrantHandlerResult>(
+													new OAuthError.InvalidGrant("ClientCredential is invalid.")));
+										}
+									}
+								});
+							} catch (OAuthError e) {
+								handler.handle(new Try<OAuthError, GrantHandlerResult>(e));
+							}
+						}
+					});
+				} catch (OAuthError e) {
+					handler.handle(new Try<OAuthError, GrantHandlerResult>(e));
+				}
+			}
+		});
 	}
 
 }

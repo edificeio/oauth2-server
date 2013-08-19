@@ -18,9 +18,11 @@
 
 package jp.eisbahn.oauth2.server.endpoint;
 
+import jp.eisbahn.oauth2.server.async.Handler;
 import jp.eisbahn.oauth2.server.data.DataHandler;
 import jp.eisbahn.oauth2.server.data.DataHandlerFactory;
 import jp.eisbahn.oauth2.server.exceptions.OAuthError;
+import jp.eisbahn.oauth2.server.exceptions.Try;
 import jp.eisbahn.oauth2.server.fetcher.clientcredential.ClientCredentialFetcher;
 import jp.eisbahn.oauth2.server.granttype.GrantHandler;
 import jp.eisbahn.oauth2.server.granttype.GrantHandlerProvider;
@@ -97,17 +99,17 @@ public class Token {
 	 * @param request The request instance.
 	 * @return The response object which has the status code and JSON string.
 	 */
-	public Response handleRequest(Request request) {
+	public void handleRequest(Request request, final Handler<Response> respHandler) {
 		try {
 			String type = request.getParameter("grant_type");
 			if (StringUtils.isEmpty(type)) {
 				throw new OAuthError.InvalidRequest("'grant_type' not found");
 			}
-			GrantHandler handler = grantHandlerProvider.getHandler(type);
+			final GrantHandler handler = grantHandlerProvider.getHandler(type);
 			if (handler == null) {
 				throw new OAuthError.UnsupportedGrantType("");
 			}
-			DataHandler dataHandler = dataHandlerFactory.create(request);
+			final DataHandler dataHandler = dataHandlerFactory.create(request);
 			ClientCredential clientCredential =
 					clientCredentialFetcher.fetch(request);
 			String clientId = clientCredential.getClientId();
@@ -118,13 +120,30 @@ public class Token {
 			if (StringUtils.isEmpty(clientSecret)) {
 				throw new OAuthError.InvalidRequest("'client_secret' not found");
 			}
-			if (!dataHandler.validateClient(clientId, clientSecret, type)) {
-				throw new OAuthError.InvalidClient("");
-			}
-			GrantHandlerResult handlerResult = handler.handleRequest(dataHandler);
-			return new Response(200, Util.toJson(handlerResult));
+			dataHandler.validateClient(clientId, clientSecret, type, new Handler<Boolean>() {
+
+				@Override
+				public void handle(Boolean valid) {
+					if (Boolean.TRUE.equals(valid)) {
+						handler.handleRequest(dataHandler, new Handler<Try<OAuthError, GrantHandlerResult>>() {
+
+							@Override
+							public void handle(Try<OAuthError, GrantHandlerResult> handlerResult) {
+								try {
+									respHandler.handle(new Response(200, Util.toJson(handlerResult.get())));
+								} catch (OAuthError e) {
+									respHandler.handle(new Response(e.getCode(), Util.toJson(e)));
+								}
+							}
+						});
+					} else {
+						OAuthError ex = new OAuthError.InvalidClient("");
+						respHandler.handle(new Response(ex.getCode(), Util.toJson(ex)));
+					}
+				}
+			});
 		} catch (OAuthError e) {
-			return new Response(e.getCode(), Util.toJson(e));
+			respHandler.handle(new Response(e.getCode(), Util.toJson(e)));
 		}
 	}
 

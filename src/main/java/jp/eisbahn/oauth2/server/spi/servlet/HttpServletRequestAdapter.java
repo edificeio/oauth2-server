@@ -26,14 +26,14 @@ import jp.eisbahn.oauth2.server.models.Request;
 
 /**
  * This class adapts a HttpServletRequest to a Request interface.
- * 
+ *
  * @author Yoichiro Tanaka
  *
  */
 public class HttpServletRequestAdapter implements Request {
 
 	private HttpServletRequest request;
-	
+
 	/**
 	 * Initialize this instance with the HttpServletRequest.
 	 * @param request The request object on the Servlet API.
@@ -42,7 +42,7 @@ public class HttpServletRequestAdapter implements Request {
 		super();
 		this.request = request;
 	}
-	
+
 	/*
 	 * (non-Javadoc)
 	 * @see jp.eisbahn.oauth2.server.models.Request#getParameter(java.lang.String)

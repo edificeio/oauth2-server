@@ -20,8 +20,10 @@ package jp.eisbahn.oauth2.server.granttype.impl;
 
 import org.apache.commons.lang3.StringUtils;
 
+import jp.eisbahn.oauth2.server.async.Handler;
 import jp.eisbahn.oauth2.server.data.DataHandler;
 import jp.eisbahn.oauth2.server.exceptions.OAuthError;
+import jp.eisbahn.oauth2.server.exceptions.Try;
 import jp.eisbahn.oauth2.server.models.AuthInfo;
 import jp.eisbahn.oauth2.server.models.ClientCredential;
 import jp.eisbahn.oauth2.server.models.Request;
@@ -40,28 +42,51 @@ public class AuthorizationCode extends AbstractGrantHandler {
 	 * @see jp.eisbahn.oauth2.server.granttype.GrantHandler#handleRequest(jp.eisbahn.oauth2.server.data.DataHandler)
 	 */
 	@Override
-	public GrantHandlerResult handleRequest(DataHandler dataHandler) throws OAuthError {
+	public void handleRequest(final DataHandler dataHandler, final Handler<Try<OAuthError, GrantHandlerResult>> handler) {
 		Request request = dataHandler.getRequest();
 
 		ClientCredential clientCredential = getClientCredentialFetcher().fetch(request);
-		String clientId = clientCredential.getClientId();
+		final String clientId = clientCredential.getClientId();
 
-		String code = getParameter(request, "code");
-		String redirectUri = getParameter(request, "redirect_uri");
+		try {
+			final String code = getParameter(request, "code");
+			final String redirectUri = getParameter(request, "redirect_uri");
 
-		AuthInfo authInfo = dataHandler.getAuthInfoByCode(code);
-		if (authInfo == null) {
-			throw new OAuthError.InvalidGrant("");
-		}
-		if (!authInfo.getClientId().equals(clientId)) {
-			throw new OAuthError.InvalidClient("");
-		}
-		if (!(StringUtils.isNotEmpty(authInfo.getRedirectUri())
-		&& authInfo.getRedirectUri().equals(redirectUri))) {
-			throw new OAuthError.RedirectUriMismatch("");
-		}
+			dataHandler.getAuthInfoByCode(code, new Handler<AuthInfo>() {
 
-		return issueAccessToken(dataHandler, authInfo);
+				@Override
+				public void handle(AuthInfo authInfo) {
+					try {
+						if (authInfo == null) {
+							throw new OAuthError.InvalidGrant("");
+						}
+						if (!authInfo.getClientId().equals(clientId)) {
+							throw new OAuthError.InvalidClient("");
+						}
+						if (!(StringUtils.isNotEmpty(authInfo.getRedirectUri())
+						&& authInfo.getRedirectUri().equals(redirectUri))) {
+							throw new OAuthError.RedirectUriMismatch("");
+						}
+						issueAccessToken(dataHandler, authInfo, new Handler<GrantHandlerResult>() {
+		
+							@Override
+							public void handle(GrantHandlerResult result) {
+								if (result != null) {
+									handler.handle(new Try<OAuthError, GrantHandlerResult>(result));
+								} else {
+									handler.handle(new Try<OAuthError, GrantHandlerResult>(
+											new OAuthError.InvalidGrant("Code is invalid or already used.")));
+								}
+							}
+						});
+					} catch (OAuthError e) {
+						handler.handle(new Try<OAuthError, GrantHandlerResult>(e));
+					}
+				}
+			});
+		} catch (OAuthError ex) {
+			handler.handle(new Try<OAuthError, GrantHandlerResult>(ex));
+		}
 	}
 
 }

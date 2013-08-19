@@ -23,11 +23,6 @@ import static org.junit.Assert.*;
 import java.util.Map;
 
 import jp.eisbahn.oauth2.server.granttype.GrantHandler;
-import jp.eisbahn.oauth2.server.granttype.impl.AuthorizationCode;
-import jp.eisbahn.oauth2.server.granttype.impl.ClientCredentials;
-import jp.eisbahn.oauth2.server.granttype.impl.DefaultGrantHandlerProvider;
-import jp.eisbahn.oauth2.server.granttype.impl.Password;
-import jp.eisbahn.oauth2.server.granttype.impl.RefreshToken;
 
 import org.junit.Test;
 

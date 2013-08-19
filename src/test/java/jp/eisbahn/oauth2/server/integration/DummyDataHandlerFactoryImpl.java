@@ -22,6 +22,7 @@ import java.util.Date;
 
 import jp.eisbahn.oauth2.server.data.DataHandler;
 import jp.eisbahn.oauth2.server.data.DataHandlerFactory;
+import jp.eisbahn.oauth2.server.data.DataHandlerSync;
 import jp.eisbahn.oauth2.server.models.AccessToken;
 import jp.eisbahn.oauth2.server.models.AuthInfo;
 import jp.eisbahn.oauth2.server.models.Request;
@@ -33,7 +34,7 @@ public class DummyDataHandlerFactoryImpl implements DataHandlerFactory {
 		return new DummyDataHandler(request);
 	}
 
-	public static class DummyDataHandler extends DataHandler {
+	public static class DummyDataHandler extends DataHandlerSync {
 
 		public DummyDataHandler(Request request) {
 			super(request);

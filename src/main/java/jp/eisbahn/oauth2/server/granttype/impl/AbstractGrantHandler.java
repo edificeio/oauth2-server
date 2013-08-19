@@ -20,6 +20,7 @@ package jp.eisbahn.oauth2.server.granttype.impl;
 
 import org.apache.commons.lang3.StringUtils;
 
+import jp.eisbahn.oauth2.server.async.Handler;
 import jp.eisbahn.oauth2.server.data.DataHandler;
 import jp.eisbahn.oauth2.server.exceptions.OAuthError;
 import jp.eisbahn.oauth2.server.fetcher.clientcredential.ClientCredentialFetcher;
@@ -65,21 +66,30 @@ public abstract class AbstractGrantHandler implements GrantHandler {
 	 * @param authInfo The authorization information created in advance.
 	 * @return The result object which has an access token and etc.
 	 */
-	protected GrantHandlerResult issueAccessToken(DataHandler dataHandler,
-			AuthInfo authInfo) {
-		AccessToken accessToken = dataHandler.createOrUpdateAccessToken(authInfo);
-		GrantHandlerResult result =
-				new GrantHandlerResult("Bearer", accessToken.getToken());
-		if (accessToken.getExpiresIn() > 0) {
-			result.setExpiresIn(accessToken.getExpiresIn());
-		}
-		if (StringUtils.isNotEmpty(authInfo.getRefreshToken())) {
-			result.setRefreshToken(authInfo.getRefreshToken());
-		}
-		if (StringUtils.isNotEmpty(authInfo.getScope())) {
-			result.setScope(authInfo.getScope());
-		}
-		return result;
+	protected void issueAccessToken(DataHandler dataHandler,
+			final AuthInfo authInfo, final Handler<GrantHandlerResult> handler) {
+		dataHandler.createOrUpdateAccessToken(authInfo, new Handler<AccessToken>() {
+
+			@Override
+			public void handle(AccessToken accessToken) {
+				if (accessToken == null) {
+					handler.handle(null);
+					return;
+				}
+				GrantHandlerResult result =
+						new GrantHandlerResult("Bearer", accessToken.getToken());
+				if (accessToken.getExpiresIn() > 0) {
+					result.setExpiresIn(accessToken.getExpiresIn());
+				}
+				if (StringUtils.isNotEmpty(authInfo.getRefreshToken())) {
+					result.setRefreshToken(authInfo.getRefreshToken());
+				}
+				if (StringUtils.isNotEmpty(authInfo.getScope())) {
+					result.setScope(authInfo.getScope());
+				}
+				handler.handle(result);
+			}
+		});
 	}
 
 	/**

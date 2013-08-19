@@ -23,9 +23,13 @@ import static org.easymock.EasyMock.expect;
 import static org.easymock.EasyMock.replay;
 import static org.easymock.EasyMock.verify;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
+import jp.eisbahn.oauth2.server.async.Handler;
 import jp.eisbahn.oauth2.server.endpoint.ProtectedResource;
 import jp.eisbahn.oauth2.server.endpoint.ProtectedResource.Response;
+import jp.eisbahn.oauth2.server.exceptions.OAuthError;
+import jp.eisbahn.oauth2.server.exceptions.Try;
 import jp.eisbahn.oauth2.server.models.Request;
 
 import org.junit.Test;
@@ -43,14 +47,23 @@ public class ProtectedResourceScenarioTest {
 
 	@Test
 	public void testSimple() throws Exception {
-		Request request = createMock(Request.class);
+		final Request request = createMock(Request.class);
 		expect(request.getHeader("Authorization")).andReturn("Bearer accessToken1").times(2);
 		replay(request);
-		Response response = target.handleRequest(request);
-		assertEquals("userId1", response.getRemoteUser());
-		assertEquals("clientId1", response.getClientId());
-		assertEquals("scope1", response.getScope());
-		verify(request);
+		target.handleRequest(request, new Handler<Try<OAuthError, Response>>() {
+			@Override
+			public void handle(Try<OAuthError, Response> event) {
+				try {
+					Response response = event.get();
+					assertEquals("userId1", response.getRemoteUser());
+					assertEquals("clientId1", response.getClientId());
+					assertEquals("scope1", response.getScope());
+					verify(request);
+				} catch (OAuthError oAuthError) {
+					fail(oAuthError.getMessage());
+				}
+			}
+		});
 	}
 
 }

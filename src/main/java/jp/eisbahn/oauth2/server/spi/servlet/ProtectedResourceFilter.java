@@ -31,6 +31,8 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import jp.eisbahn.oauth2.server.async.Handler;
+import jp.eisbahn.oauth2.server.exceptions.Try;
 import org.apache.commons.lang3.StringUtils;
 
 import jp.eisbahn.oauth2.server.data.DataHandlerFactory;
@@ -43,7 +45,7 @@ import jp.eisbahn.oauth2.server.fetcher.accesstoken.impl.DefaultAccessTokenFetch
 /**
  * This servlet filter checks whether a request to access to each protected
  * resource is valid or not as the OAuth 2.0.
- * 
+ *
  * This instance needs two helper objects. One is a DataHandlerFactory instance.
  * Other one is a AccessTokenFetcherProvider instance. These implementation
  * class name are specified as the init-param values. For instance, specify
@@ -63,7 +65,7 @@ import jp.eisbahn.oauth2.server.fetcher.accesstoken.impl.DefaultAccessTokenFetch
  * &nbsp;&nbsp;&lt;/init-param&gt;<br />
  * &lt;/filter&gt;
  * </code>
- * 
+ *
  * @author Yoichiro Tanaka
  *
  */
@@ -79,7 +81,7 @@ public class ProtectedResourceFilter implements Filter {
 	 * For instance, this method loads two implementation class name and create
 	 * these instances. Then, the ProtectedResource instance to process the
 	 * OAuth 2.0 validation for the request is created with their helper instances.
-	 * 
+	 *
 	 * @param config The FilterConfig object.
 	 * @exception ServletException Each helper instance could not be created.
 	 */
@@ -103,41 +105,48 @@ public class ProtectedResourceFilter implements Filter {
 	/**
 	 * Check the request for whether can access or not to APIs to access the protected
 	 * resource.
-	 * 
+	 *
 	 * @param req The request object.
 	 * @param resp The response object.
 	 * @param chain The chain object to chain some filters.
-	 * @exception IOException When the error regarding I/O occurred.
 	 * @exception ServletException When the first argument is not a HttpServletRequest
 	 * instance.
 	 */
 	@Override
-	public void doFilter(ServletRequest req, ServletResponse resp,
-			FilterChain chain) throws IOException, ServletException {
-		if (req instanceof HttpServletRequest) {
+	public void doFilter(final ServletRequest req, final ServletResponse resp,
+						 final FilterChain chain) throws ServletException {
+		if (req instanceof HttpServletRequest && resp instanceof HttpServletResponse) {
 			HttpServletRequest httpRequest = (HttpServletRequest)req;
 			HttpServletRequestAdapter adapter = new HttpServletRequestAdapter(httpRequest);
-			try {
-				Response response = protectedResource.handleRequest(adapter);
-				req.setAttribute("client_id", response.getClientId());
-				req.setAttribute("remote_user", response.getRemoteUser());
-				req.setAttribute("scope", response.getScope());
-				chain.doFilter(req, resp);
-			} catch (OAuthError e) {
-				if (resp instanceof HttpServletResponse) {
-					HttpServletResponse httpResponse = (HttpServletResponse)resp;
-					httpResponse.setStatus(e.getCode());
-					List<String> params = new ArrayList<String>();
-					params.add("error=\"" + e.getType() + "\"");
-					if (StringUtils.isNotBlank(e.getDescription())) {
-						params.add("error_description=\"" + e.getDescription() + "\"");
+
+			protectedResource.handleRequest(adapter, new Handler<Try<OAuthError, Response>>() {
+				@Override
+				public void handle(Try<OAuthError, Response> event) {
+					try {
+						Response response = event.get();
+						req.setAttribute("client_id", response.getClientId());
+						req.setAttribute("remote_user", response.getRemoteUser());
+						req.setAttribute("scope", response.getScope());
+						chain.doFilter(req, resp);
+					} catch (OAuthError e) {
+							HttpServletResponse httpResponse = (HttpServletResponse)resp;
+							httpResponse.setStatus(e.getCode());
+							List<String> params = new ArrayList<String>();
+							params.add("error=\"" + e.getType() + "\"");
+							if (StringUtils.isNotBlank(e.getDescription())) {
+								params.add("error_description=\"" + e.getDescription() + "\"");
+							}
+							String error = StringUtils.join(params, ", ");
+							httpResponse.setHeader("WWW-Authenticate", "Bearer " + error);
+					} catch (ServletException e) {
+						HttpServletResponse httpResponse = (HttpServletResponse)resp;
+						httpResponse.setStatus(500);
+					} catch (IOException e) {
+						HttpServletResponse httpResponse = (HttpServletResponse)resp;
+						httpResponse.setStatus(500);
 					}
-					String error = StringUtils.join(params, ", ");
-					httpResponse.setHeader("WWW-Authenticate", "Bearer " + error);
-				} else {
-					throw new ServletException("This filter is available under HTTP Servlet container.");
 				}
-			}
+			});
 		} else {
 			throw new ServletException("This filter is available under HTTP Servlet container.");
 		}

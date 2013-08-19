@@ -18,9 +18,11 @@
 
 package jp.eisbahn.oauth2.server.endpoint;
 
+import jp.eisbahn.oauth2.server.async.Handler;
 import jp.eisbahn.oauth2.server.data.DataHandler;
 import jp.eisbahn.oauth2.server.data.DataHandlerFactory;
 import jp.eisbahn.oauth2.server.exceptions.OAuthError;
+import jp.eisbahn.oauth2.server.exceptions.Try;
 import jp.eisbahn.oauth2.server.fetcher.accesstoken.AccessTokenFetcher;
 import jp.eisbahn.oauth2.server.fetcher.accesstoken.AccessTokenFetcher.FetchResult;
 import jp.eisbahn.oauth2.server.fetcher.accesstoken.AccessTokenFetcherProvider;
@@ -56,36 +58,73 @@ public class ProtectedResource {
 	 * @throws OAuthError If the request is invalid. This exception has a reason
 	 * why this request was judged as invalid.
 	 */
-	public Response handleRequest(Request request) throws OAuthError {
-		AccessTokenFetcher accessTokenFetcher = accessTokenFetcherProvider.getFetcher(request);
-		if (accessTokenFetcher == null) {
-			throw new OAuthError.InvalidRequest("Access token was not specified.");
+	public void handleRequest(Request request, final Handler<Try<OAuthError, Response>> handler) {
+		try {
+			AccessTokenFetcher accessTokenFetcher = accessTokenFetcherProvider.getFetcher(request);
+			if (accessTokenFetcher == null) {
+				throw new OAuthError.InvalidRequest("Access token was not specified.");
+			}
+			FetchResult fetchResult = accessTokenFetcher.fetch(request);
+			String token = fetchResult.getToken();
+			final DataHandler dataHandler = dataHandlerFactory.create(request);
+			dataHandler.getAccessToken(token, new Handler<AccessToken>() {
+				
+				@Override
+				public void handle(AccessToken accessToken) {
+					try {
+						if (accessToken == null) {
+							throw new OAuthError.InvalidToken("Invalid access token.");
+						}
+						long now = System.currentTimeMillis();
+						if (accessToken.getCreatedOn().getTime() + accessToken.getExpiresIn() * 1000 <= now) {
+							throw new OAuthError.ExpiredToken();
+						}
+						dataHandler.getAuthInfoById(accessToken.getAuthId(), new Handler<AuthInfo>() {
+		
+							@Override
+							public void handle(final AuthInfo authInfo) {
+								if (authInfo == null) {
+									handler.handle(new Try<OAuthError, ProtectedResource.Response>(
+											new OAuthError.InvalidToken("Invalid access token.")));
+								} else {
+									dataHandler.validateClientById(authInfo.getClientId(), new Handler<Boolean>() {
+
+										@Override
+										public void handle(Boolean valid) {
+											if (Boolean.TRUE.equals(valid)) {
+												dataHandler.validateUserById(authInfo.getUserId(), new Handler<Boolean>() {
+
+													@Override
+													public void handle(Boolean userValid) {
+														if (Boolean.TRUE.equals(userValid)) {
+															handler.handle(
+					new Try<OAuthError, ProtectedResource.Response>(new Response(
+									authInfo.getUserId(),
+									authInfo.getClientId(),
+									authInfo.getScope())));
+														} else {
+															handler.handle(new Try<OAuthError, ProtectedResource.Response>(
+																	new OAuthError.InvalidToken("Invalid user.")));
+														}
+													}
+												});
+											} else {
+												handler.handle(new Try<OAuthError, ProtectedResource.Response>(
+														new OAuthError.InvalidToken("Invalid client.")));
+											}
+										}
+									});
+								}
+							}
+						});
+					} catch (OAuthError e) {
+						handler.handle(new Try<OAuthError, ProtectedResource.Response>(e));
+					}
+				}
+			});
+		} catch (OAuthError e) {
+			handler.handle(new Try<OAuthError, ProtectedResource.Response>(e));
 		}
-		FetchResult fetchResult = accessTokenFetcher.fetch(request);
-		String token = fetchResult.getToken();
-		DataHandler dataHandler = dataHandlerFactory.create(request);
-		AccessToken accessToken = dataHandler.getAccessToken(token);
-		if (accessToken == null) {
-			throw new OAuthError.InvalidToken("Invalid access token.");
-		}
-		long now = System.currentTimeMillis();
-		if (accessToken.getCreatedOn().getTime() + accessToken.getExpiresIn() * 1000 <= now) {
-			throw new OAuthError.ExpiredToken();
-		}
-		AuthInfo authInfo = dataHandler.getAuthInfoById(accessToken.getAuthId());
-		if (authInfo == null) {
-			throw new OAuthError.InvalidToken("Invalid access token.");
-		}
-		if (!dataHandler.validateClientById(authInfo.getClientId())) {
-			throw new OAuthError.InvalidToken("Invalid client.");
-		}
-		if (!dataHandler.validateUserById(authInfo.getUserId())) {
-			throw new OAuthError.InvalidToken("Invalid user.");
-		}
-		return new Response(
-			authInfo.getUserId(),
-			authInfo.getClientId(),
-			authInfo.getScope());
 	}
 
 	/**

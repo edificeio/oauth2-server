@@ -22,8 +22,6 @@ import static org.junit.Assert.assertEquals;
 
 import java.util.Date;
 
-import jp.eisbahn.oauth2.server.models.AccessToken;
-
 import org.junit.Test;
 
 public class AccessTokenTest {

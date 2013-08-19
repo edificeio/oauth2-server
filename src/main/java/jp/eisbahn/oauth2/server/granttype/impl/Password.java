@@ -18,6 +18,8 @@
 
 package jp.eisbahn.oauth2.server.granttype.impl;
 
+import jp.eisbahn.oauth2.server.async.Handler;
+import jp.eisbahn.oauth2.server.exceptions.Try;
 import org.apache.commons.lang3.StringUtils;
 
 import jp.eisbahn.oauth2.server.data.DataHandler;
@@ -29,7 +31,7 @@ import jp.eisbahn.oauth2.server.models.Request;
 /**
  * This class is an implementation for processing the Resource Owner Password
  * Credentials Grant flow of OAuth2.0.
- * 
+ *
  * @author Yoichiro Tanaka
  *
  */
@@ -40,31 +42,61 @@ public class Password extends AbstractGrantHandler {
 	 * @see jp.eisbahn.oauth2.server.granttype.GrantHandler#handleRequest(jp.eisbahn.oauth2.server.data.DataHandler)
 	 */
 	@Override
-	public GrantHandlerResult handleRequest(DataHandler dataHandler) throws OAuthError {
-		Request request = dataHandler.getRequest();
+	public void handleRequest(final DataHandler dataHandler, final Handler<Try<OAuthError, GrantHandlerResult>> handler) {
+		final Request request = dataHandler.getRequest();
 
 		ClientCredential clientCredential = getClientCredentialFetcher().fetch(request);
-		String clientId = clientCredential.getClientId();
+		final String clientId = clientCredential.getClientId();
 
-		String username = getParameter(request, "username");
-		String password = getParameter(request, "password");
+		try {
+			String username = getParameter(request, "username");
+			String password = getParameter(request, "password");
 
-		String userId = dataHandler.getUserId(username, password);
-		if (StringUtils.isEmpty(userId)) {
-			throw new OAuthError.InvalidGrant("");
+			dataHandler.getUserId(username, password, new Handler<String>() {
+				@Override
+				public void handle(String userId) {
+					try {
+						if (StringUtils.isEmpty(userId)) {
+							throw new OAuthError.InvalidGrant("");
+						}
+						String scope = request.getParameter("scope");
+
+						dataHandler.createOrUpdateAuthInfo(clientId, userId, scope, new Handler<AuthInfo>() {
+							@Override
+							public void handle(AuthInfo authInfo) {
+								try {
+									if (authInfo == null) {
+										throw new OAuthError.InvalidGrant("");
+									}
+									if (!authInfo.getClientId().equals(clientId)) {
+										throw new OAuthError.InvalidClient("");
+									}
+
+									issueAccessToken(dataHandler, authInfo, new Handler<GrantHandlerResult>() {
+
+										@Override
+										public void handle(GrantHandlerResult result) {
+											if (result != null) {
+												handler.handle(new Try<OAuthError, GrantHandlerResult>(result));
+											} else {
+												handler.handle(new Try<OAuthError, GrantHandlerResult>(
+														new OAuthError.InvalidGrant("Credential is invalid.")));
+											}
+										}
+									});
+								} catch (OAuthError ex) {
+									handler.handle(new Try<OAuthError, GrantHandlerResult>(ex));
+								}
+							}
+						});
+					} catch (OAuthError ex) {
+						handler.handle(new Try<OAuthError, GrantHandlerResult>(ex));
+					}
+				}
+			});
+		} catch (OAuthError ex) {
+			handler.handle(new Try<OAuthError, GrantHandlerResult>(ex));
 		}
-		String scope = request.getParameter("scope");
-
-		AuthInfo authInfo =
-				dataHandler.createOrUpdateAuthInfo(clientId, userId, scope);
-		if (authInfo == null) {
-			throw new OAuthError.InvalidGrant("");
-		}
-		if (!authInfo.getClientId().equals(clientId)) {
-			throw new OAuthError.InvalidClient("");
-		}
-
-		return issueAccessToken(dataHandler, authInfo);
 	}
 
 }

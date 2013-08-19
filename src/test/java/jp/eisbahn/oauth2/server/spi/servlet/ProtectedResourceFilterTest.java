@@ -172,9 +172,6 @@ public class ProtectedResourceFilterTest {
 	@Test
 	public void testResponseNotHttpServletResponse() throws Exception {
 		HttpServletRequest request = createMock(HttpServletRequest.class);
-		expect(request.getHeader("Authorization")).andReturn(null);
-		expect(request.getParameter("oauth_token")).andReturn(null);
-		expect(request.getParameter("access_token")).andReturn(null);
 		ServletResponse response = createMock(ServletResponse.class);
 		FilterConfig config = createMock(FilterConfig.class);
 		FilterChain chain = createMock(FilterChain.class);

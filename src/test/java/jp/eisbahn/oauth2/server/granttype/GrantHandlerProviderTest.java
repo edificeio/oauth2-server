@@ -26,8 +26,6 @@ import java.util.Map;
 
 import org.junit.Test;
 
-import jp.eisbahn.oauth2.server.granttype.GrantHandler;
-import jp.eisbahn.oauth2.server.granttype.GrantHandlerProvider;
 import jp.eisbahn.oauth2.server.granttype.impl.AuthorizationCode;
 import jp.eisbahn.oauth2.server.granttype.impl.ClientCredentials;
 import jp.eisbahn.oauth2.server.granttype.impl.Password;

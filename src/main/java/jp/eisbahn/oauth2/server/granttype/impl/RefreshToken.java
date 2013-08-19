@@ -18,8 +18,10 @@
 
 package jp.eisbahn.oauth2.server.granttype.impl;
 
+import jp.eisbahn.oauth2.server.async.Handler;
 import jp.eisbahn.oauth2.server.data.DataHandler;
 import jp.eisbahn.oauth2.server.exceptions.OAuthError;
+import jp.eisbahn.oauth2.server.exceptions.Try;
 import jp.eisbahn.oauth2.server.models.AuthInfo;
 import jp.eisbahn.oauth2.server.models.ClientCredential;
 import jp.eisbahn.oauth2.server.models.Request;
@@ -27,34 +29,51 @@ import jp.eisbahn.oauth2.server.models.Request;
 /**
  * This class is an implementation to re-issue an access token with the
  * specified refresh token.
- * 
+ *
  * @author Yoichiro Tanaka
  *
  */
 public class RefreshToken extends AbstractGrantHandler {
 
-	/*
-	 * (non-Javadoc)
-	 * @see jp.eisbahn.oauth2.server.granttype.GrantHandler#handleRequest(jp.eisbahn.oauth2.server.data.DataHandler)
-	 */
 	@Override
-	public GrantHandlerResult handleRequest(DataHandler dataHandler) throws OAuthError {
+	public void handleRequest(final DataHandler dataHandler,
+			final Handler<Try<OAuthError, GrantHandlerResult>> handler) {
 		Request request = dataHandler.getRequest();
 
 		ClientCredential clientCredential = getClientCredentialFetcher().fetch(request);
-		String clientId = clientCredential.getClientId();
+		final String clientId = clientCredential.getClientId();
+		try {
+			String refreshToken = getParameter(request, "refresh_token");
 
-		String refreshToken = getParameter(request, "refresh_token");
-
-		AuthInfo authInfo = dataHandler.getAuthInfoByRefreshToken(refreshToken);
-		if (authInfo == null) {
-			throw new OAuthError.InvalidGrant("");
+			dataHandler.getAuthInfoByRefreshToken(refreshToken, new Handler<AuthInfo>() {
+				@Override
+				public void handle(AuthInfo authInfo) {
+					try {
+						if (authInfo == null) {
+							throw new OAuthError.InvalidGrant("");
+						}
+						if (!authInfo.getClientId().equals(clientId)) {
+							throw new OAuthError.InvalidClient("");
+						}
+						issueAccessToken(dataHandler, authInfo, new Handler<GrantHandlerResult>() {
+							@Override
+							public void handle(GrantHandlerResult result) {
+								if (result != null) {
+									handler.handle(new Try<OAuthError, GrantHandlerResult>(result));
+								} else {
+									handler.handle(new Try<OAuthError, GrantHandlerResult>(
+											new OAuthError.InvalidGrant("Refresh token is invalid.")));
+								}
+							}
+						});
+					} catch (OAuthError e) {
+						handler.handle(new Try<OAuthError, GrantHandlerResult>(e));
+					}
+				}
+			});
+		} catch (OAuthError ex) {
+			handler.handle(new Try<OAuthError, GrantHandlerResult>(ex));
 		}
-		if (!authInfo.getClientId().equals(clientId)) {
-			throw new OAuthError.InvalidClient("");
-		}
-
-		return issueAccessToken(dataHandler, authInfo);
 	}
 
 }

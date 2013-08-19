@@ -27,6 +27,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import jp.eisbahn.oauth2.server.async.Handler;
 import org.apache.commons.io.IOUtils;
 
 import jp.eisbahn.oauth2.server.data.DataHandlerFactory;
@@ -39,7 +40,7 @@ import jp.eisbahn.oauth2.server.granttype.impl.DefaultGrantHandlerProvider;
 
 /**
  * This class is an HttpServlet implementation of the Token issuing endpoint.
- * 
+ *
  * This instance needs Three helper objects. One is a DataHandlerFactory instance.
  * Other one is a GrantHandlerProvider instance. Last one is
  * ClientCredentialFetcher instance. These implementation
@@ -64,7 +65,7 @@ import jp.eisbahn.oauth2.server.granttype.impl.DefaultGrantHandlerProvider;
  * &nbsp;&nbsp;&lt;/init-param&gt;<br />
  * &lt;/servlet&gt;
  * </code>
- * 
+ *
  * @author Yoichiro Tanaka
  *
  */
@@ -82,7 +83,7 @@ public class TokenServlet extends HttpServlet {
 	 * For instance, this method loads three implementation class name and create
 	 * these instances. Then, the Token instance to process the
 	 * OAuth 2.0 grant execution for the request is created with their helper instances.
-	 * 
+	 *
 	 * @param config The ServletConfig object.
 	 * @exception ServletException Each helper instance could not be created.
 	 */
@@ -144,22 +145,32 @@ public class TokenServlet extends HttpServlet {
 
 	/**
 	 * Issue the token against the request based on OAuth 2.0.
-	 * 
+	 *
 	 * @param req The request object.
 	 * @param resp The response object.
-	 * @exception IOException When the error regarding I/O occurred.
-	 * @exception ServletException When other error occurred.
 	 */
 	@Override
-	protected void doPost(HttpServletRequest req, HttpServletResponse resp)
-			throws ServletException, IOException {
+	protected void doPost(HttpServletRequest req, final HttpServletResponse resp) {
 		HttpServletRequestAdapter request = new HttpServletRequestAdapter(req);
-		Response response = token.handleRequest(request);
-		resp.setStatus(response.getCode());
-		resp.setContentType("application/json; charset=UTF-8");
-		PrintWriter writer = resp.getWriter();
-		IOUtils.write(response.getBody(), writer);
-		writer.flush();
+		token.handleRequest(request, new Handler<Response>() {
+			@Override
+			public void handle(Response response) {
+				try {
+					resp.setStatus(response.getCode());
+					resp.setContentType("application/json; charset=UTF-8");
+					PrintWriter writer = resp.getWriter();
+					IOUtils.write(response.getBody(), writer);
+					writer.flush();
+				} catch (IOException e) {
+					try {
+						resp.sendError(500, e.getMessage());
+					} catch (IOException e1) {
+						resp.setStatus(500);
+						resp.resetBuffer();
+					}
+				}
+			}
+		});
 	}
 
 }
