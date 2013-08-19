@@ -18,6 +18,7 @@
 
 package jp.eisbahn.oauth2.server.data;
 
+import jp.eisbahn.oauth2.server.async.Handler;
 import jp.eisbahn.oauth2.server.models.AccessToken;
 import jp.eisbahn.oauth2.server.models.AuthInfo;
 import jp.eisbahn.oauth2.server.models.Request;
@@ -127,8 +128,8 @@ public abstract class DataHandler {
 	 * @param grantType The grant type string which the client required.
 	 * @return True if the client is valid.
 	 */
-	public abstract boolean validateClient(
-			String clientId, String clientSecret, String grantType);
+	public abstract void validateClient(
+			String clientId, String clientSecret, String grantType, Handler<Boolean> handler);
 
 	/**
 	 * Retrieve the user's ID from the user's credential.
@@ -142,7 +143,7 @@ public abstract class DataHandler {
 	 * @return The user's ID string. If the user is not found, you must return
 	 * a null value or an empty string.
 	 */
-	public abstract String getUserId(String username, String password);
+	public abstract void getUserId(String username, String password, Handler<String> handler);
 
 	/**
 	 * Create or update an Authorization information.
@@ -156,8 +157,8 @@ public abstract class DataHandler {
 	 * @param scope The scope string.
 	 * @return The created or updated the information about authorization.
 	 */
-	public abstract AuthInfo createOrUpdateAuthInfo(
-			String clientId, String userId, String scope);
+	public abstract void createOrUpdateAuthInfo(
+			String clientId, String userId, String scope, Handler<AuthInfo> handler);
 
 	/**
 	 * Create or update an Access token.
@@ -168,7 +169,7 @@ public abstract class DataHandler {
 	 * @param authInfo The instance which has the information about authorization.
 	 * @return The created or updated access token instance.
 	 */
-	public abstract AccessToken createOrUpdateAccessToken(AuthInfo authInfo);
+	public abstract void createOrUpdateAccessToken(AuthInfo authInfo, Handler<AccessToken> handler);
 
 	/**
 	 * Retrieve the authorization information by the authorization code value.
@@ -180,7 +181,7 @@ public abstract class DataHandler {
 	 * @param code The authorization code value.
 	 * @return The authorization information instance.
 	 */
-	public abstract AuthInfo getAuthInfoByCode(String code);
+	public abstract void getAuthInfoByCode(String code, Handler<AuthInfo> handler);
 
 	/**
 	 * Retrieve the authorization information by the refresh token string.
@@ -195,7 +196,7 @@ public abstract class DataHandler {
 	 * @param refreshToken The refresh token string.
 	 * @return The authorization information instance.
 	 */
-	public abstract AuthInfo getAuthInfoByRefreshToken(String refreshToken);
+	public abstract void getAuthInfoByRefreshToken(String refreshToken, Handler<AuthInfo> handler);
 
 	/**
 	 * Determine an user ID representing the client itself and return it.
@@ -207,8 +208,8 @@ public abstract class DataHandler {
 	 * @param clientSecret The client secret string.
 	 * @return The ID representing the client.
 	 */
-	public abstract String getClientUserId(
-			String clientId, String clientSecret);
+	public abstract void getClientUserId(
+			String clientId, String clientSecret, Handler<String> handler);
 
 	/**
 	 * Validate the client specified by the client ID.
@@ -220,7 +221,7 @@ public abstract class DataHandler {
 	 * @return If the client status is invalid, return false, otherwise, return
 	 * true.
 	 */
-	public abstract boolean validateClientById(String clientId);
+	public abstract void validateClientById(String clientId, Handler<Boolean> handler);
 
 	/**
 	 * Validate the user specified by the user ID.
@@ -232,7 +233,7 @@ public abstract class DataHandler {
 	 * @return If the user's status is invalid, return false, otherwise, return
 	 * true.
 	 */
-	public abstract boolean validateUserById(String userId);
+	public abstract void validateUserById(String userId, Handler<Boolean> handler);
 
 	/**
 	 * Retrieve the access token from the token string.
@@ -244,7 +245,7 @@ public abstract class DataHandler {
 	 * @param token The access token string.
 	 * @return The object which has the information for the access token.
 	 */
-	public abstract AccessToken getAccessToken(String token);
+	public abstract void getAccessToken(String token, Handler<AccessToken> handler);
 
 	/**
 	 * Retrieve the authorization information by the ID.
@@ -257,6 +258,6 @@ public abstract class DataHandler {
 	 * @param id The ID to specify the authorization information.
 	 * @return The object which has the information about the authorization.
 	 */
-	public abstract AuthInfo getAuthInfoById(String id);
+	public abstract void getAuthInfoById(String id, Handler<AuthInfo> handler);
 
 }

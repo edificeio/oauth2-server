@@ -18,13 +18,15 @@
 
 package jp.eisbahn.oauth2.server.granttype;
 
+import jp.eisbahn.oauth2.server.async.Handler;
+import jp.eisbahn.oauth2.server.data.DataHandler;
+import jp.eisbahn.oauth2.server.exceptions.OAuthError;
+import jp.eisbahn.oauth2.server.exceptions.Try;
+
 import org.codehaus.jackson.annotate.JsonProperty;
 import org.codehaus.jackson.annotate.JsonPropertyOrder;
 import org.codehaus.jackson.map.annotate.JsonSerialize;
 import org.codehaus.jackson.map.annotate.JsonSerialize.Inclusion;
-
-import jp.eisbahn.oauth2.server.data.DataHandler;
-import jp.eisbahn.oauth2.server.exceptions.OAuthError;
 
 /**
  * This interface defines how to issue a token for each grant type.
@@ -47,7 +49,7 @@ public interface GrantHandler {
 	 * @return The issued token information as the result of calling this method.
 	 * @throws OAuthError If the validation was failed.
 	 */
-	public GrantHandlerResult handleRequest(DataHandler dataHandler) throws OAuthError;
+	public void handleRequest(DataHandler dataHandler, Handler<Try<OAuthError, GrantHandlerResult>> handler);
 
 	/**
 	 * This class has the information about issued token.
