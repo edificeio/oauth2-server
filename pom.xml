@@ -5,7 +5,7 @@
 
  <groupId>jp.eisbahn</groupId>
  <artifactId>oauth2-server</artifactId>
- <version>1.0-SNAPSHOT</version>
+ <version>1.1-SNAPSHOT</version>
  <packaging>jar</packaging>
 
  <name>${project.groupId}.${project.artifactId}</name>
@@ -13,14 +13,41 @@
  <description>OAuth2 Server implementation</description>
 
  <properties>
-  <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+   <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+   <java.version>1.7</java.version>
  </properties>
- 
+
+ <distributionManagement>
+  <!-- Publish versioned releases here -->
+  <repository>
+    <id>wse</id>
+    <name>wse releases</name>
+    <url>http://maven.web-education.net:8081/nexus/content/repositories/releases</url>
+  </repository>
+
+  <!-- Publish snapshots here -->
+  <snapshotRepository>
+    <id>wse</id>
+    <name>wse snapshots</name>
+    <url>http://maven.web-education.net:8081/nexus/content/repositories/snapshots</url>
+  </snapshotRepository>
+</distributionManagement>
  <build>
-  <resources>
-   <resource>
-    <directory>src/main/resources</directory>
-   </resource>
+   <plugins>
+     <plugin>
+       <groupId>org.apache.maven.plugins</groupId>
+       <artifactId>maven-compiler-plugin</artifactId>
+       <version>3.1</version>
+       <configuration>
+         <source>${java.version}</source>
+         <target>${java.version}</target>
+       </configuration>
+     </plugin>
+   </plugins>
+   <resources>
+     <resource>
+       <directory>src/main/resources</directory>
+     </resource>
   </resources>
  </build>
 
@@ -50,7 +77,6 @@
    <groupId>commons-io</groupId>
    <artifactId>commons-io</artifactId>
    <version>2.4</version>
-   <scope>test</scope>
   </dependency>
   <dependency>
    <groupId>junit</groupId>
