@@ -72,6 +72,10 @@ public abstract class AbstractGrantHandler implements GrantHandler {
 
 			@Override
 			public void handle(AccessToken accessToken) {
+				if (accessToken == null) {
+					handler.handle(null);
+					return;
+				}
 				GrantHandlerResult result =
 						new GrantHandlerResult("Bearer", accessToken.getToken());
 				if (accessToken.getExpiresIn() > 0) {

@@ -71,7 +71,12 @@ public class AuthorizationCode extends AbstractGrantHandler {
 		
 							@Override
 							public void handle(GrantHandlerResult result) {
-								handler.handle(new Try<OAuthError, GrantHandlerResult>(result));
+								if (result != null) {
+									handler.handle(new Try<OAuthError, GrantHandlerResult>(result));
+								} else {
+									handler.handle(new Try<OAuthError, GrantHandlerResult>(
+											new OAuthError.InvalidGrant("Code is invalid or already used.")));
+								}
 							}
 						});
 					} catch (OAuthError e) {
