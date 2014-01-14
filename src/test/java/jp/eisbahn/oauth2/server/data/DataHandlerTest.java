@@ -23,14 +23,13 @@ import static org.junit.Assert.*;
 import org.easymock.EasyMock;
 import org.junit.Test;
 
-import jp.eisbahn.oauth2.server.data.DataHandler;
 import jp.eisbahn.oauth2.server.models.AccessToken;
 import jp.eisbahn.oauth2.server.models.AuthInfo;
 import jp.eisbahn.oauth2.server.models.Request;
 
 public class DataHandlerTest {
 
-	private class Target extends DataHandler {
+	private class Target extends DataHandlerSync {
 
 		public Target(Request request) {
 			super(request);
@@ -98,7 +97,7 @@ public class DataHandlerTest {
 	@Test
 	public void testSimple() throws Exception {
 		Request request = EasyMock.createMock(Request.class);
-		DataHandler target = new Target(request);
+		DataHandlerSync target = new Target(request);
 		assertEquals(request, target.getRequest());
 		assertTrue(target.validateClientById(null));
 		assertTrue(target.validateUserById(null));

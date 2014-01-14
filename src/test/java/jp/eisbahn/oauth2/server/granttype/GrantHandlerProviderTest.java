@@ -26,11 +26,11 @@ import java.util.Map;
 
 import org.junit.Test;
 
-import jp.eisbahn.oauth2.server.granttype.GrantHandler;
-import jp.eisbahn.oauth2.server.granttype.GrantHandlerProvider;
+//import jp.eisbahn.oauth2.server.granttype.GrantHandler;
+//import jp.eisbahn.oauth2.server.granttype.GrantHandlerProvider;
 import jp.eisbahn.oauth2.server.granttype.impl.AuthorizationCode;
-import jp.eisbahn.oauth2.server.granttype.impl.ClientCredentials;
-import jp.eisbahn.oauth2.server.granttype.impl.Password;
+//import jp.eisbahn.oauth2.server.granttype.impl.ClientCredentials;
+//import jp.eisbahn.oauth2.server.granttype.impl.Password;
 import jp.eisbahn.oauth2.server.granttype.impl.RefreshToken;
 
 public class GrantHandlerProviderTest {
@@ -41,23 +41,23 @@ public class GrantHandlerProviderTest {
 		Map<String, GrantHandler> handlers = new HashMap<String, GrantHandler>() {
 			{
 				put("authorization_code", new AuthorizationCode());
-				put("password", new Password());
+//				put("password", new Password());
 				put("refresh_token", new RefreshToken());
-				put("client_credentials", new ClientCredentials());
+//				put("client_credentials", new ClientCredentials());
 			}
 		};
 		GrantHandlerProvider target = new GrantHandlerProvider();
 		target.setGrantHandlers(handlers);
 		assertTrue(target.getHandler("authorization_code") instanceof AuthorizationCode);
-		assertTrue(target.getHandler("password") instanceof Password);
+//		assertTrue(target.getHandler("password") instanceof Password);
 		assertTrue(target.getHandler("refresh_token") instanceof RefreshToken);
-		assertTrue(target.getHandler("client_credentials") instanceof ClientCredentials);
+//		assertTrue(target.getHandler("client_credentials") instanceof ClientCredentials);
 		handlers = target.getHandlers();
-		assertEquals(4, handlers.size());
+		assertEquals(2, handlers.size());
 		assertTrue(handlers.get("authorization_code") instanceof AuthorizationCode);
-		assertTrue(handlers.get("password") instanceof Password);
+//		assertTrue(handlers.get("password") instanceof Password);
 		assertTrue(handlers.get("refresh_token") instanceof RefreshToken);
-		assertTrue(handlers.get("client_credentials") instanceof ClientCredentials);
+//		assertTrue(handlers.get("client_credentials") instanceof ClientCredentials);
 	}
 
 }

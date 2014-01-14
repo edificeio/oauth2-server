@@ -29,9 +29,11 @@ import static org.junit.Assert.fail;
 import java.util.Calendar;
 import java.util.Date;
 
+import jp.eisbahn.oauth2.server.async.Handler;
+import jp.eisbahn.oauth2.server.exceptions.Try;
 import org.junit.Test;
 
-import jp.eisbahn.oauth2.server.data.DataHandler;
+import jp.eisbahn.oauth2.server.data.DataHandlerSync;
 import jp.eisbahn.oauth2.server.data.DataHandlerFactory;
 import jp.eisbahn.oauth2.server.endpoint.ProtectedResource.Response;
 import jp.eisbahn.oauth2.server.exceptions.OAuthError;
@@ -46,44 +48,55 @@ public class ProtectedResourceTest {
 
 	@Test
 	public void testHandleRequestAccessTokenFetcherNotFound() throws Exception {
-		Request request = createMock(Request.class);
+		final Request request = createMock(Request.class);
 		replay(request);
 		ProtectedResource target = new ProtectedResource();
 		AccessTokenFetcherProvider accessTokenFetcherProvider = new AccessTokenFetcherProvider();
 		accessTokenFetcherProvider.setAccessTokenFetchers(new AccessTokenFetcher[]{});
 		target.setAccessTokenFetcherProvider(accessTokenFetcherProvider);
-		try {
-			target.handleRequest(request);
-			fail("OAuthError not occurred.");
-		} catch (OAuthError e) {
-			assertTrue(e instanceof OAuthError.InvalidRequest);
-		}
-		verify(request);
+		target.handleRequest(request, new Handler<Try<OAuthError, Response>>() {
+			@Override
+			public void handle(Try<OAuthError, Response> event) {
+				try {
+					event.get();
+					fail("OAuthError not occurred.");
+				} catch (OAuthError e) {
+					assertTrue(e instanceof OAuthError.InvalidRequest);
+				}
+				verify(request);
+			}
+		});
+
 	}
 	
 	@Test
 	public void testHandleRequestAccessTokenNotFound() throws Exception {
-		Request request = createMock(Request.class);
+		final Request request = createMock(Request.class);
 		expect(request.getHeader("Authorization")).andReturn("Bearer accessToken1").times(2);
-		DataHandler dataHandler = createMock(DataHandler.class);
-		expect(dataHandler.getAccessToken("accessToken1")).andReturn(null);
-		DataHandlerFactory dataHandlerFactory = createMock(DataHandlerFactory.class);
-		expect(dataHandlerFactory.create(request)).andReturn(dataHandler);
-		replay(request, dataHandler, dataHandlerFactory);
+		DataHandlerSync DataHandlerSync = createMock(DataHandlerSync.class);
+		expect(DataHandlerSync.getAccessToken("accessToken1")).andReturn(null);
+		DataHandlerFactory DataHandlerSyncFactory = createMock(DataHandlerFactory.class);
+		expect(DataHandlerSyncFactory.create(request)).andReturn(DataHandlerSync);
+		replay(request, DataHandlerSync, DataHandlerSyncFactory);
 		ProtectedResource target = new ProtectedResource();
 		AccessTokenFetcherProvider accessTokenFetcherProvider = new AccessTokenFetcherProvider();
 		accessTokenFetcherProvider.setAccessTokenFetchers(new AccessTokenFetcher[]{
 				new AuthHeader()
 		});
 		target.setAccessTokenFetcherProvider(accessTokenFetcherProvider);
-		target.setDataHandlerFactory(dataHandlerFactory);
-		try {
-			target.handleRequest(request);
-			fail("OAuthError not occurred.");
-		} catch (OAuthError e) {
-			assertTrue(e instanceof OAuthError.InvalidToken);
-		}
-		verify(request);
+		target.setDataHandlerFactory(DataHandlerSyncFactory);
+		target.handleRequest(request, new Handler<Try<OAuthError, Response>>() {
+			@Override
+			public void handle(Try<OAuthError, Response> event) {
+				try {
+					event.get();
+					fail("OAuthError not occurred.");
+				} catch (OAuthError e) {
+					assertTrue(e instanceof OAuthError.InvalidToken);
+				}
+				verify(request);
+			}
+		});
 	}
 	
 	private Date createDate(int daysAgo) {
@@ -95,162 +108,192 @@ public class ProtectedResourceTest {
 	
 	@Test
 	public void testHandleRequestAccessTokenExpired() throws Exception {
-		Request request = createMock(Request.class);
+		final Request request = createMock(Request.class);
 		expect(request.getHeader("Authorization")).andReturn("Bearer accessToken1").times(2);
 		AccessToken accessToken = new AccessToken();
 		accessToken.setCreatedOn(createDate(-1));
 		accessToken.setExpiresIn(0);
-		DataHandler dataHandler = createMock(DataHandler.class);
-		expect(dataHandler.getAccessToken("accessToken1")).andReturn(accessToken);
-		DataHandlerFactory dataHandlerFactory = createMock(DataHandlerFactory.class);
-		expect(dataHandlerFactory.create(request)).andReturn(dataHandler);
-		replay(request, dataHandler, dataHandlerFactory);
+		DataHandlerSync DataHandlerSync = createMock(DataHandlerSync.class);
+		expect(DataHandlerSync.getAccessToken("accessToken1")).andReturn(accessToken);
+		DataHandlerFactory DataHandlerSyncFactory = createMock(DataHandlerFactory.class);
+		expect(DataHandlerSyncFactory.create(request)).andReturn(DataHandlerSync);
+		replay(request, DataHandlerSync, DataHandlerSyncFactory);
 		ProtectedResource target = new ProtectedResource();
 		AccessTokenFetcherProvider accessTokenFetcherProvider = new AccessTokenFetcherProvider();
 		accessTokenFetcherProvider.setAccessTokenFetchers(new AccessTokenFetcher[]{
 				new AuthHeader()
 		});
 		target.setAccessTokenFetcherProvider(accessTokenFetcherProvider);
-		target.setDataHandlerFactory(dataHandlerFactory);
-		try {
-			target.handleRequest(request);
-			fail("OAuthError not occurred.");
-		} catch (OAuthError e) {
-			assertTrue(e instanceof OAuthError.ExpiredToken);
-		}
-		verify(request);
+		target.setDataHandlerFactory(DataHandlerSyncFactory);
+		target.handleRequest(request, new Handler<Try<OAuthError, Response>>() {
+			@Override
+			public void handle(Try<OAuthError, Response> event) {
+				try {
+					event.get();
+					fail("OAuthError not occurred.");
+				} catch (OAuthError e) {
+					assertTrue(e instanceof OAuthError.ExpiredToken);
+				}
+				verify(request);
+			}
+		});
 	}
 
 	@Test
 	public void testHandleRequestAuthInfoNotFound() throws Exception {
-		Request request = createMock(Request.class);
+		final Request request = createMock(Request.class);
 		expect(request.getHeader("Authorization")).andReturn("Bearer accessToken1").times(2);
 		AccessToken accessToken = new AccessToken();
 		accessToken.setCreatedOn(createDate(0));
 		accessToken.setExpiresIn(3600);
 		accessToken.setAuthId("authId1");
-		DataHandler dataHandler = createMock(DataHandler.class);
-		expect(dataHandler.getAccessToken("accessToken1")).andReturn(accessToken);
-		expect(dataHandler.getAuthInfoById("authId1")).andReturn(null);
-		DataHandlerFactory dataHandlerFactory = createMock(DataHandlerFactory.class);
-		expect(dataHandlerFactory.create(request)).andReturn(dataHandler);
-		replay(request, dataHandler, dataHandlerFactory);
+		DataHandlerSync DataHandlerSync = createMock(DataHandlerSync.class);
+		expect(DataHandlerSync.getAccessToken("accessToken1")).andReturn(accessToken);
+		expect(DataHandlerSync.getAuthInfoById("authId1")).andReturn(null);
+		DataHandlerFactory DataHandlerSyncFactory = createMock(DataHandlerFactory.class);
+		expect(DataHandlerSyncFactory.create(request)).andReturn(DataHandlerSync);
+		replay(request, DataHandlerSync, DataHandlerSyncFactory);
 		ProtectedResource target = new ProtectedResource();
 		AccessTokenFetcherProvider accessTokenFetcherProvider = new AccessTokenFetcherProvider();
 		accessTokenFetcherProvider.setAccessTokenFetchers(new AccessTokenFetcher[]{
 				new AuthHeader()
 		});
 		target.setAccessTokenFetcherProvider(accessTokenFetcherProvider);
-		target.setDataHandlerFactory(dataHandlerFactory);
-		try {
-			target.handleRequest(request);
-			fail("OAuthError not occurred.");
-		} catch (OAuthError e) {
-			assertTrue(e instanceof OAuthError.InvalidToken);
-		}
-		verify(request);
+		target.setDataHandlerFactory(DataHandlerSyncFactory);
+		target.handleRequest(request, new Handler<Try<OAuthError, Response>>() {
+			@Override
+			public void handle(Try<OAuthError, Response> event) {
+				try {
+					event.get();
+					fail("OAuthError not occurred.");
+				} catch (OAuthError e) {
+					assertTrue(e instanceof OAuthError.InvalidToken);
+				}
+				verify(request);
+			}
+		});
 	}
 
 	@Test
 	public void testHandleRequestValidateClientFailed() throws Exception {
-		Request request = createMock(Request.class);
+		final Request request = createMock(Request.class);
 		expect(request.getHeader("Authorization")).andReturn("Bearer accessToken1").times(2);
 		AccessToken accessToken = new AccessToken();
 		accessToken.setCreatedOn(createDate(0));
 		accessToken.setExpiresIn(3600);
 		accessToken.setAuthId("authId1");
-		DataHandler dataHandler = createMock(DataHandler.class);
-		expect(dataHandler.getAccessToken("accessToken1")).andReturn(accessToken);
+		DataHandlerSync DataHandlerSync = createMock(DataHandlerSync.class);
+		expect(DataHandlerSync.getAccessToken("accessToken1")).andReturn(accessToken);
 		AuthInfo authInfo = new AuthInfo();
 		authInfo.setClientId("clientId1");
-		expect(dataHandler.getAuthInfoById("authId1")).andReturn(authInfo);
-		expect(dataHandler.validateClientById("clientId1")).andReturn(false);
-		DataHandlerFactory dataHandlerFactory = createMock(DataHandlerFactory.class);
-		expect(dataHandlerFactory.create(request)).andReturn(dataHandler);
-		replay(request, dataHandler, dataHandlerFactory);
+		expect(DataHandlerSync.getAuthInfoById("authId1")).andReturn(authInfo);
+		expect(DataHandlerSync.validateClientById("clientId1")).andReturn(false);
+		DataHandlerFactory DataHandlerSyncFactory = createMock(DataHandlerFactory.class);
+		expect(DataHandlerSyncFactory.create(request)).andReturn(DataHandlerSync);
+		replay(request, DataHandlerSync, DataHandlerSyncFactory);
 		ProtectedResource target = new ProtectedResource();
 		AccessTokenFetcherProvider accessTokenFetcherProvider = new AccessTokenFetcherProvider();
 		accessTokenFetcherProvider.setAccessTokenFetchers(new AccessTokenFetcher[]{
 				new AuthHeader()
 		});
 		target.setAccessTokenFetcherProvider(accessTokenFetcherProvider);
-		target.setDataHandlerFactory(dataHandlerFactory);
-		try {
-			target.handleRequest(request);
-			fail("OAuthError not occurred.");
-		} catch (OAuthError e) {
-			assertTrue(e instanceof OAuthError.InvalidToken);
-		}
-		verify(request);
+		target.setDataHandlerFactory(DataHandlerSyncFactory);
+		target.handleRequest(request, new Handler<Try<OAuthError, Response>>() {
+			@Override
+			public void handle(Try<OAuthError, Response> event) {
+				try {
+					event.get();
+					fail("OAuthError not occurred.");
+				} catch (OAuthError e) {
+					assertTrue(e instanceof OAuthError.InvalidToken);
+				}
+				verify(request);
+			}
+		});
 	}
 
 	@Test
 	public void testHandleRequestValidateUserFailed() throws Exception {
-		Request request = createMock(Request.class);
+		final Request request = createMock(Request.class);
 		expect(request.getHeader("Authorization")).andReturn("Bearer accessToken1").times(2);
 		AccessToken accessToken = new AccessToken();
 		accessToken.setCreatedOn(createDate(0));
 		accessToken.setExpiresIn(3600);
 		accessToken.setAuthId("authId1");
-		DataHandler dataHandler = createMock(DataHandler.class);
-		expect(dataHandler.getAccessToken("accessToken1")).andReturn(accessToken);
+		DataHandlerSync DataHandlerSync = createMock(DataHandlerSync.class);
+		expect(DataHandlerSync.getAccessToken("accessToken1")).andReturn(accessToken);
 		AuthInfo authInfo = new AuthInfo();
 		authInfo.setClientId("clientId1");
 		authInfo.setUserId("userId1");
-		expect(dataHandler.getAuthInfoById("authId1")).andReturn(authInfo);
-		expect(dataHandler.validateClientById("clientId1")).andReturn(true);
-		expect(dataHandler.validateUserById("userId1")).andReturn(false);
-		DataHandlerFactory dataHandlerFactory = createMock(DataHandlerFactory.class);
-		expect(dataHandlerFactory.create(request)).andReturn(dataHandler);
-		replay(request, dataHandler, dataHandlerFactory);
+		expect(DataHandlerSync.getAuthInfoById("authId1")).andReturn(authInfo);
+		expect(DataHandlerSync.validateClientById("clientId1")).andReturn(true);
+		expect(DataHandlerSync.validateUserById("userId1")).andReturn(false);
+		DataHandlerFactory DataHandlerSyncFactory = createMock(DataHandlerFactory.class);
+		expect(DataHandlerSyncFactory.create(request)).andReturn(DataHandlerSync);
+		replay(request, DataHandlerSync, DataHandlerSyncFactory);
 		ProtectedResource target = new ProtectedResource();
 		AccessTokenFetcherProvider accessTokenFetcherProvider = new AccessTokenFetcherProvider();
 		accessTokenFetcherProvider.setAccessTokenFetchers(new AccessTokenFetcher[]{
 				new AuthHeader()
 		});
 		target.setAccessTokenFetcherProvider(accessTokenFetcherProvider);
-		target.setDataHandlerFactory(dataHandlerFactory);
-		try {
-			target.handleRequest(request);
-			fail("OAuthError not occurred.");
-		} catch (OAuthError e) {
-			assertTrue(e instanceof OAuthError.InvalidToken);
-		}
-		verify(request);
+		target.setDataHandlerFactory(DataHandlerSyncFactory);
+		target.handleRequest(request, new Handler<Try<OAuthError, Response>>() {
+			@Override
+			public void handle(Try<OAuthError, Response> event) {
+				try {
+					event.get();
+					fail("OAuthError not occurred.");
+				} catch (OAuthError e) {
+					assertTrue(e instanceof OAuthError.InvalidToken);
+				}
+				verify(request);
+			}
+		});
 	}
 
 	@Test
 	public void testHandleRequestSuccess() throws Exception {
-		Request request = createMock(Request.class);
+		final Request request = createMock(Request.class);
 		expect(request.getHeader("Authorization")).andReturn("Bearer accessToken1").times(2);
 		AccessToken accessToken = new AccessToken();
 		accessToken.setCreatedOn(createDate(0));
 		accessToken.setExpiresIn(3600);
 		accessToken.setAuthId("authId1");
-		DataHandler dataHandler = createMock(DataHandler.class);
-		expect(dataHandler.getAccessToken("accessToken1")).andReturn(accessToken);
+		DataHandlerSync DataHandlerSync = createMock(DataHandlerSync.class);
+		expect(DataHandlerSync.getAccessToken("accessToken1")).andReturn(accessToken);
 		AuthInfo authInfo = new AuthInfo();
 		authInfo.setClientId("clientId1");
 		authInfo.setUserId("userId1");
 		authInfo.setScope("scope1");
-		expect(dataHandler.getAuthInfoById("authId1")).andReturn(authInfo);
-		expect(dataHandler.validateClientById("clientId1")).andReturn(true);
-		expect(dataHandler.validateUserById("userId1")).andReturn(true);
-		DataHandlerFactory dataHandlerFactory = createMock(DataHandlerFactory.class);
-		expect(dataHandlerFactory.create(request)).andReturn(dataHandler);
-		replay(request, dataHandler, dataHandlerFactory);
+		expect(DataHandlerSync.getAuthInfoById("authId1")).andReturn(authInfo);
+		expect(DataHandlerSync.validateClientById("clientId1")).andReturn(true);
+		expect(DataHandlerSync.validateUserById("userId1")).andReturn(true);
+		DataHandlerFactory DataHandlerSyncFactory = createMock(DataHandlerFactory.class);
+		expect(DataHandlerSyncFactory.create(request)).andReturn(DataHandlerSync);
+		replay(request, DataHandlerSync, DataHandlerSyncFactory);
 		ProtectedResource target = new ProtectedResource();
 		AccessTokenFetcherProvider accessTokenFetcherProvider = new AccessTokenFetcherProvider();
 		accessTokenFetcherProvider.setAccessTokenFetchers(new AccessTokenFetcher[]{
 				new AuthHeader()
 		});
 		target.setAccessTokenFetcherProvider(accessTokenFetcherProvider);
-		target.setDataHandlerFactory(dataHandlerFactory);
-		Response response = target.handleRequest(request);
-		assertEquals("userId1", response.getRemoteUser());
-		assertEquals("clientId1", response.getClientId());
-		assertEquals("scope1", response.getScope());
-		verify(request);
+		target.setDataHandlerFactory(DataHandlerSyncFactory);
+		target.handleRequest(request, new Handler<Try<OAuthError, Response>>() {
+			@Override
+			public void handle(Try<OAuthError, Response> event) {
+				try {
+					Response response = event.get();
+					assertEquals("userId1", response.getRemoteUser());
+					assertEquals("clientId1", response.getClientId());
+					assertEquals("scope1", response.getScope());
+				} catch (OAuthError oAuthError) {
+					fail("OAuthError occurred.");
+				}
+				verify(request);
+			}
+		});
+
 	}
 
 }

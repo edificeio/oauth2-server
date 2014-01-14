@@ -25,6 +25,10 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 
+import jp.eisbahn.oauth2.server.async.Handler;
+import jp.eisbahn.oauth2.server.data.DataHandlerSync;
+import jp.eisbahn.oauth2.server.exceptions.Try;
+import jp.eisbahn.oauth2.server.granttype.GrantHandler;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -57,14 +61,18 @@ public class AuthorizationCodeTest {
 	public void testHandleRequestCodeNotFound() throws Exception {
 		Request request = createRequestMock();
 		expect(request.getParameter("code")).andReturn(null);
-		DataHandler dataHandler = createDataHandlerMock(request);
+		DataHandlerSync dataHandler = createDataHandlerMock(request);
 		replay(request, dataHandler);
-		try {
-			target.handleRequest(dataHandler);
-			fail("Error.InvalidRequest not occurred.");
-		} catch (OAuthError.InvalidRequest e) {
-			assertEquals("'code' not found", e.getDescription());
-		}
+		target.handleRequest(dataHandler, new Handler<Try<OAuthError, GrantHandlerResult>>() {
+			@Override
+			public void handle(Try<OAuthError, GrantHandlerResult> event) {
+				try {
+					event.get();
+					fail("Error.InvalidRequest not occurred.");
+				} catch (OAuthError e) {
+				}
+			}
+		});
 	}
 
 	@Test
@@ -72,14 +80,18 @@ public class AuthorizationCodeTest {
 		Request request = createRequestMock();
 		expect(request.getParameter("code")).andReturn("code1");
 		expect(request.getParameter("redirect_uri")).andReturn(null);
-		DataHandler dataHandler = createDataHandlerMock(request);
+		DataHandlerSync dataHandler = createDataHandlerMock(request);
 		replay(request, dataHandler);
-		try {
-			target.handleRequest(dataHandler);
-			fail("Error.InvalidRequest not occurred.");
-		} catch (OAuthError.InvalidRequest e) {
-			assertEquals("'redirect_uri' not found", e.getDescription());
-		}
+		target.handleRequest(dataHandler, new Handler<Try<OAuthError, GrantHandlerResult>>() {
+			@Override
+			public void handle(Try<OAuthError, GrantHandlerResult> event) {
+				try {
+					event.get();
+					fail("Error.InvalidRequest not occurred.");
+				} catch (OAuthError e) {
+				}
+			}
+		});
 	}
 
 	@Test
@@ -87,14 +99,19 @@ public class AuthorizationCodeTest {
 		Request request = createRequestMock();
 		expect(request.getParameter("code")).andReturn("code1");
 		expect(request.getParameter("redirect_uri")).andReturn("redirectUri1");
-		DataHandler dataHandler = createDataHandlerMock(request);
+		DataHandlerSync dataHandler = createDataHandlerMock(request);
 		expect(dataHandler.getAuthInfoByCode("code1")).andReturn(null);
 		replay(request, dataHandler);
-		try {
-			target.handleRequest(dataHandler);
-			fail("Error.InvalidGrant not occurred.");
-		} catch (OAuthError.InvalidGrant e) {
-		}
+		target.handleRequest(dataHandler, new Handler<Try<OAuthError, GrantHandlerResult>>() {
+			@Override
+			public void handle(Try<OAuthError, GrantHandlerResult> event) {
+				try {
+					event.get();
+					fail("Error.InvalidGrant not occurred.");
+				} catch (OAuthError e) {
+				}
+			}
+		});
 	}
 
 	@Test
@@ -102,16 +119,21 @@ public class AuthorizationCodeTest {
 		Request request = createRequestMock();
 		expect(request.getParameter("code")).andReturn("code1");
 		expect(request.getParameter("redirect_uri")).andReturn("redirectUri1");
-		DataHandler dataHandler = createDataHandlerMock(request);
+		DataHandlerSync dataHandler = createDataHandlerMock(request);
 		AuthInfo authInfo = new AuthInfo();
 		authInfo.setClientId("clientId2");
 		expect(dataHandler.getAuthInfoByCode("code1")).andReturn(authInfo);
 		replay(request, dataHandler);
-		try {
-			target.handleRequest(dataHandler);
-			fail("Error.InvalidClient not occurred.");
-		} catch (OAuthError.InvalidClient e) {
-		}
+		target.handleRequest(dataHandler, new Handler<Try<OAuthError, GrantHandlerResult>>() {
+			@Override
+			public void handle(Try<OAuthError, GrantHandlerResult> event) {
+				try {
+					event.get();
+					fail("Error.InvalidClient not occurred.");
+				} catch (OAuthError e) {
+				}
+			}
+		});
 	}
 
 	@Test
@@ -119,17 +141,22 @@ public class AuthorizationCodeTest {
 		Request request = createRequestMock();
 		expect(request.getParameter("code")).andReturn("code1");
 		expect(request.getParameter("redirect_uri")).andReturn("redirectUri1");
-		DataHandler dataHandler = createDataHandlerMock(request);
+		DataHandlerSync dataHandler = createDataHandlerMock(request);
 		AuthInfo authInfo = new AuthInfo();
 		authInfo.setClientId("clientId1");
 		authInfo.setRedirectUri("");
 		expect(dataHandler.getAuthInfoByCode("code1")).andReturn(authInfo);
 		replay(request, dataHandler);
-		try {
-			target.handleRequest(dataHandler);
-			fail("Error.RedirectUriMismatch not occurred.");
-		} catch (OAuthError.RedirectUriMismatch e) {
-		}
+		target.handleRequest(dataHandler, new Handler<Try<OAuthError, GrantHandlerResult>>() {
+			@Override
+			public void handle(Try<OAuthError, GrantHandlerResult> event) {
+				try {
+					event.get();
+					fail("Error.RedirectUriMismatch not occurred.");
+				} catch (OAuthError e) {
+				}
+			}
+		});
 	}
 
 	@Test
@@ -137,17 +164,22 @@ public class AuthorizationCodeTest {
 		Request request = createRequestMock();
 		expect(request.getParameter("code")).andReturn("code1");
 		expect(request.getParameter("redirect_uri")).andReturn("redirectUri1");
-		DataHandler dataHandler = createDataHandlerMock(request);
+		DataHandlerSync dataHandler = createDataHandlerMock(request);
 		AuthInfo authInfo = new AuthInfo();
 		authInfo.setClientId("clientId1");
 		authInfo.setRedirectUri("redirectUri2");
 		expect(dataHandler.getAuthInfoByCode("code1")).andReturn(authInfo);
 		replay(request, dataHandler);
-		try {
-			target.handleRequest(dataHandler);
-			fail("Error.RedirectUriMismatch not occurred.");
-		} catch (OAuthError.RedirectUriMismatch e) {
-		}
+		target.handleRequest(dataHandler, new Handler<Try<OAuthError, GrantHandlerResult>>() {
+			@Override
+			public void handle(Try<OAuthError, GrantHandlerResult> event) {
+				try {
+					event.get();
+					fail("Error.RedirectUriMismatch not occurred.");
+				} catch (OAuthError e) {
+				}
+			}
+		});
 	}
 
 	@Test
@@ -155,7 +187,7 @@ public class AuthorizationCodeTest {
 		Request request = createRequestMock();
 		expect(request.getParameter("code")).andReturn("code1");
 		expect(request.getParameter("redirect_uri")).andReturn("redirectUri1");
-		DataHandler dataHandler = createDataHandlerMock(request);
+		DataHandlerSync dataHandler = createDataHandlerMock(request);
 		AuthInfo authInfo = new AuthInfo();
 		authInfo.setClientId("clientId1");
 		authInfo.setRedirectUri("redirectUri1");
@@ -164,12 +196,23 @@ public class AuthorizationCodeTest {
 		accessToken.setToken("accessToken1");
 		expect(dataHandler.createOrUpdateAccessToken(authInfo)).andReturn(accessToken);
 		replay(request, dataHandler);
-		GrantHandlerResult result = target.handleRequest(dataHandler);
-		assertEquals("Bearer", result.getTokenType());
-		assertEquals("accessToken1", result.getAccessToken());
-		assertNull(result.getExpiresIn());
-		assertNull(result.getRefreshToken());
-		assertNull(result.getScope());
+		target.handleRequest(dataHandler, new Handler<Try<OAuthError, GrantHandlerResult>>() {
+			@Override
+			public void handle(Try<OAuthError, GrantHandlerResult> event) {
+				GrantHandlerResult result = null;
+				try {
+					result = event.get();
+				} catch (OAuthError oAuthError) {
+					oAuthError.printStackTrace();
+					fail();
+				}
+				assertEquals("Bearer", result.getTokenType());
+				assertEquals("accessToken1", result.getAccessToken());
+				assertNull(result.getExpiresIn());
+				assertNull(result.getRefreshToken());
+				assertNull(result.getScope());
+			}
+		});
 	}
 
 	@Test
@@ -177,7 +220,7 @@ public class AuthorizationCodeTest {
 		Request request = createRequestMock();
 		expect(request.getParameter("code")).andReturn("code1");
 		expect(request.getParameter("redirect_uri")).andReturn("redirectUri1");
-		DataHandler dataHandler = createDataHandlerMock(request);
+		DataHandlerSync dataHandler = createDataHandlerMock(request);
 		AuthInfo authInfo = new AuthInfo();
 		authInfo.setClientId("clientId1");
 		authInfo.setRedirectUri("redirectUri1");
@@ -189,12 +232,23 @@ public class AuthorizationCodeTest {
 		accessToken.setExpiresIn(123L);
 		expect(dataHandler.createOrUpdateAccessToken(authInfo)).andReturn(accessToken);
 		replay(request, dataHandler);
-		GrantHandlerResult result = target.handleRequest(dataHandler);
-		assertEquals("Bearer", result.getTokenType());
-		assertEquals("accessToken1", result.getAccessToken());
-		assertEquals(123L, (long)result.getExpiresIn());
-		assertEquals("refreshToken1", result.getRefreshToken());
-		assertEquals("scope1", result.getScope());
+		target.handleRequest(dataHandler, new Handler<Try<OAuthError, GrantHandlerResult>>() {
+			@Override
+			public void handle(Try<OAuthError, GrantHandlerResult> event) {
+				GrantHandlerResult result = null;
+				try {
+					result = event.get();
+				} catch (OAuthError oAuthError) {
+					oAuthError.printStackTrace();
+					fail();
+				}
+				assertEquals("Bearer", result.getTokenType());
+				assertEquals("accessToken1", result.getAccessToken());
+				assertEquals(123L, (long) result.getExpiresIn());
+				assertEquals("refreshToken1", result.getRefreshToken());
+				assertEquals("scope1", result.getScope());
+			}
+		});
 	}
 
 	private Request createRequestMock() {
@@ -205,8 +259,8 @@ public class AuthorizationCodeTest {
 		return request;
 	}
 
-	private DataHandler createDataHandlerMock(Request request) {
-		DataHandler dataHandler = createMock(DataHandler.class);
+	private DataHandlerSync createDataHandlerMock(Request request) {
+		DataHandlerSync dataHandler = createMock(DataHandlerSync.class);
 		expect(dataHandler.getRequest()).andReturn(request);
 		return dataHandler;
 	}

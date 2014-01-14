@@ -23,11 +23,6 @@ import static org.junit.Assert.*;
 import java.util.Map;
 
 import jp.eisbahn.oauth2.server.granttype.GrantHandler;
-import jp.eisbahn.oauth2.server.granttype.impl.AuthorizationCode;
-import jp.eisbahn.oauth2.server.granttype.impl.ClientCredentials;
-import jp.eisbahn.oauth2.server.granttype.impl.DefaultGrantHandlerProvider;
-import jp.eisbahn.oauth2.server.granttype.impl.Password;
-import jp.eisbahn.oauth2.server.granttype.impl.RefreshToken;
 
 import org.junit.Test;
 
@@ -37,11 +32,11 @@ public class DefaultGrantHandlerProviderTest {
 	public void testSimple() throws Exception {
 		DefaultGrantHandlerProvider target = new DefaultGrantHandlerProvider();
 		Map<String, GrantHandler> handlers = target.getHandlers();
-		assertEquals(4, handlers.size());
+		assertEquals(2, handlers.size());
 		assertTrue(handlers.get("authorization_code") instanceof AuthorizationCode);
-		assertTrue(handlers.get("password") instanceof Password);
+//		assertTrue(handlers.get("password") instanceof Password);
 		assertTrue(handlers.get("refresh_token") instanceof RefreshToken);
-		assertTrue(handlers.get("client_credentials") instanceof ClientCredentials);
+//		assertTrue(handlers.get("client_credentials") instanceof ClientCredentials);
 	}
 
 }

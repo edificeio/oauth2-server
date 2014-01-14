@@ -19,7 +19,6 @@
 package jp.eisbahn.oauth2.server.utils;
 
 import static org.junit.Assert.assertEquals;
-import jp.eisbahn.oauth2.server.utils.Util;
 
 import org.codehaus.jackson.annotate.JsonPropertyOrder;
 import org.junit.Test;

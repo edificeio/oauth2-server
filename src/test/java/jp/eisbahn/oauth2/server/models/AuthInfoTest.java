@@ -19,7 +19,6 @@
 package jp.eisbahn.oauth2.server.models;
 
 import static org.junit.Assert.assertEquals;
-import jp.eisbahn.oauth2.server.models.AuthInfo;
 
 import org.junit.After;
 import org.junit.Before;
