@@ -23,66 +23,77 @@ public abstract class DataHandlerSync extends DataHandler {
 	@Override
 	public void getUserId(String username, String password,
 			Handler<String> handler) {
-		// TODO Auto-generated method stub
+		handler.handle(getUserId(username, password));
 
 	}
+
+	public abstract String getUserId(String username, String password);
 
 	@Override
 	public void createOrUpdateAuthInfo(String clientId, String userId,
 			String scope, Handler<AuthInfo> handler) {
-		// TODO Auto-generated method stub
-
+		handler.handle(createOrUpdateAuthInfo(clientId, userId, scope));
 	}
+
+	public abstract AuthInfo createOrUpdateAuthInfo(String clientId, String userId, String scope);
 
 	@Override
 	public void createOrUpdateAccessToken(AuthInfo authInfo,
 			Handler<AccessToken> handler) {
-		// TODO Auto-generated method stub
-
+		handler.handle(createOrUpdateAccessToken(authInfo));
 	}
+
+	public abstract AccessToken createOrUpdateAccessToken(AuthInfo authInfo);
 
 	@Override
 	public void getAuthInfoByCode(String code, Handler<AuthInfo> handler) {
-		// TODO Auto-generated method stub
-
+		handler.handle(getAuthInfoByCode(code));
 	}
+
+	public abstract AuthInfo getAuthInfoByCode(String code);
 
 	@Override
 	public void getAuthInfoByRefreshToken(String refreshToken,
 			Handler<AuthInfo> handler) {
-		// TODO Auto-generated method stub
-
+		handler.handle(getAuthInfoByRefreshToken(refreshToken));
 	}
+
+	public abstract AuthInfo getAuthInfoByRefreshToken(String refreshToken);
 
 	@Override
 	public void getClientUserId(String clientId, String clientSecret,
 			Handler<String> handler) {
-		// TODO Auto-generated method stub
-
+		handler.handle(getClientUserId(clientId, clientSecret));
 	}
+
+	public abstract String getClientUserId(String clientId, String clientSecret);
 
 	@Override
 	public void validateClientById(String clientId, Handler<Boolean> handler) {
-		// TODO Auto-generated method stub
-
+		handler.handle(validateClientById(clientId));
 	}
+
+	public abstract boolean validateClientById(String clientId);
 
 	@Override
 	public void validateUserById(String userId, Handler<Boolean> handler) {
-		// TODO Auto-generated method stub
-
+		handler.handle(validateUserById(userId));
 	}
+
+	public abstract boolean validateUserById(String userId);
 
 	@Override
 	public void getAccessToken(String token, Handler<AccessToken> handler) {
-		// TODO Auto-generated method stub
-
+		handler.handle(getAccessToken(token));
 	}
+
+	public abstract AccessToken getAccessToken(String token);
 
 	@Override
 	public void getAuthInfoById(String id, Handler<AuthInfo> handler) {
-		// TODO Auto-generated method stub
-
+		handler.handle(getAuthInfoById(id));
 	}
+
+	public abstract AuthInfo getAuthInfoById(String id);
 
 }
