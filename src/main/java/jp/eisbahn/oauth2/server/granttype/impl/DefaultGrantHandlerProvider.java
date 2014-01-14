@@ -47,6 +47,9 @@ public class DefaultGrantHandlerProvider extends GrantHandlerProvider {
 		AuthorizationCode authorizationCode = new AuthorizationCode();
 		authorizationCode.setClientCredentialFetcher(fetcher);
 		handlers.put("authorization_code", authorizationCode);
+		RefreshToken refreshToken = new RefreshToken();
+		refreshToken.setClientCredentialFetcher(fetcher);
+		handlers.put("refresh_token", refreshToken);
 		setGrantHandlers(handlers);
 	}
 
