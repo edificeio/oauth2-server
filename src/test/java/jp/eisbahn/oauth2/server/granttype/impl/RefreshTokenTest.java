@@ -28,6 +28,7 @@ import static org.junit.Assert.fail;
 import jp.eisbahn.oauth2.server.async.Handler;
 import jp.eisbahn.oauth2.server.data.DataHandlerSync;
 import jp.eisbahn.oauth2.server.exceptions.Try;
+import jp.eisbahn.oauth2.server.mock.MockDataHandler;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -76,10 +77,10 @@ public class RefreshTokenTest {
 	@Test
 	public void testHandleRequestAuthInfoNotFound() throws Exception {
 		Request request = createRequestMock();
-		expect(request.getParameter("refresh_token")).andReturn("refreshToken1");
-		DataHandlerSync dataHandler = createDataHandlerMock(request);
-		expect(dataHandler.getAuthInfoByRefreshToken("refreshToken1")).andReturn(null);
-		replay(request, dataHandler);
+		expect(request.getParameter("refresh_token")).andReturn("nullRefreshToken1");
+		DataHandlerSync dataHandler = new MockDataHandler(request);
+//		expect(dataHandler.getAuthInfoByRefreshToken("refreshToken1")).andReturn(null);
+		replay(request);
 		target.handleRequest(dataHandler, new Handler<Try<OAuthError, GrantHandlerResult>>() {
 			@Override
 			public void handle(Try<OAuthError, GrantHandlerResult> event) {
@@ -87,7 +88,6 @@ public class RefreshTokenTest {
 					event.get();
 					fail("Error.InvalidGrant not occurred.");
 				} catch (OAuthError e) {
-					e.printStackTrace();
 				}
 			}
 		});
@@ -96,12 +96,12 @@ public class RefreshTokenTest {
 	@Test
 	public void testHandleRequestClientIdMismatch() throws Exception {
 		Request request = createRequestMock();
-		expect(request.getParameter("refresh_token")).andReturn("refreshToken1");
-		DataHandlerSync dataHandler = createDataHandlerMock(request);
-		AuthInfo authInfo = new AuthInfo();
-		authInfo.setClientId("clientId2");
-		expect(dataHandler.getAuthInfoByRefreshToken("refreshToken1")).andReturn(authInfo);
-		replay(request, dataHandler);
+		expect(request.getParameter("refresh_token")).andReturn("clientFailedRefreshToken1");
+		DataHandlerSync dataHandler = new MockDataHandler(request);
+//		AuthInfo authInfo = new AuthInfo();
+//		authInfo.setClientId("clientId2");
+//		expect(dataHandler.getAuthInfoByRefreshToken("refreshToken1")).andReturn(authInfo);
+		replay(request);
 		target.handleRequest(dataHandler, new Handler<Try<OAuthError, GrantHandlerResult>>() {
 			@Override
 			public void handle(Try<OAuthError, GrantHandlerResult> event) {
@@ -109,7 +109,6 @@ public class RefreshTokenTest {
 					event.get();
 					fail("Error.InvalidClient not occurred.");
 				} catch (OAuthError e) {
-					e.printStackTrace();
 				}
 			}
 		});
@@ -119,14 +118,14 @@ public class RefreshTokenTest {
 	public void testHandleRequestSimple() throws Exception {
 		Request request = createRequestMock();
 		expect(request.getParameter("refresh_token")).andReturn("refreshToken1");
-		DataHandlerSync dataHandler = createDataHandlerMock(request);
-		AuthInfo authInfo = new AuthInfo();
-		authInfo.setClientId("clientId1");
-		expect(dataHandler.getAuthInfoByRefreshToken("refreshToken1")).andReturn(authInfo);
-		AccessToken accessToken = new AccessToken();
-		accessToken.setToken("accessToken1");
-		expect(dataHandler.createOrUpdateAccessToken(authInfo)).andReturn(accessToken);
-		replay(request, dataHandler);
+		DataHandlerSync dataHandler = new MockDataHandler(request);
+//		AuthInfo authInfo = new AuthInfo();
+//		authInfo.setClientId("clientId1");
+//		expect(dataHandler.getAuthInfoByRefreshToken("refreshToken1")).andReturn(authInfo);
+//		AccessToken accessToken = new AccessToken();
+//		accessToken.setToken("accessToken1");
+//		expect(dataHandler.createOrUpdateAccessToken(authInfo)).andReturn(accessToken);
+		replay(request);
 		target.handleRequest(dataHandler, new Handler<Try<OAuthError, GrantHandlerResult>>() {
 			@Override
 			public void handle(Try<OAuthError, GrantHandlerResult> event) {
@@ -134,12 +133,8 @@ public class RefreshTokenTest {
 					GrantHandlerResult result = event.get();
 					assertEquals("Bearer", result.getTokenType());
 					assertEquals("accessToken1", result.getAccessToken());
-					assertNull(result.getExpiresIn());
-					assertNull(result.getRefreshToken());
-					assertNull(result.getScope());
 				} catch (OAuthError oAuthError) {
-					oAuthError.printStackTrace();
-					fail();
+					fail(oAuthError.getMessage());
 				}
 			}
 		});
@@ -149,18 +144,18 @@ public class RefreshTokenTest {
 	public void testHandleRequestFull() throws Exception {
 		Request request = createRequestMock();
 		expect(request.getParameter("refresh_token")).andReturn("refreshToken1");
-		DataHandlerSync dataHandler = createDataHandlerMock(request);
-		AuthInfo authInfo = new AuthInfo();
-		authInfo.setClientId("clientId1");
-		authInfo.setRedirectUri("redirectUri1");
-		authInfo.setRefreshToken("refreshToken1");
-		authInfo.setScope("scope1");
-		expect(dataHandler.getAuthInfoByRefreshToken("refreshToken1")).andReturn(authInfo);
-		AccessToken accessToken = new AccessToken();
-		accessToken.setToken("accessToken1");
-		accessToken.setExpiresIn(123L);
-		expect(dataHandler.createOrUpdateAccessToken(authInfo)).andReturn(accessToken);
-		replay(request, dataHandler);
+		DataHandlerSync dataHandler = new MockDataHandler(request);
+//		AuthInfo authInfo = new AuthInfo();
+//		authInfo.setClientId("clientId1");
+//		authInfo.setRedirectUri("redirectUri1");
+//		authInfo.setRefreshToken("refreshToken1");
+//		authInfo.setScope("scope1");
+//		expect(dataHandler.getAuthInfoByRefreshToken("refreshToken1")).andReturn(authInfo);
+//		AccessToken accessToken = new AccessToken();
+//		accessToken.setToken("accessToken1");
+//		accessToken.setExpiresIn(123L);
+//		expect(dataHandler.createOrUpdateAccessToken(authInfo)).andReturn(accessToken);
+		replay(request);
 		target.handleRequest(dataHandler, new Handler<Try<OAuthError, GrantHandlerResult>>() {
 			@Override
 			public void handle(Try<OAuthError, GrantHandlerResult> event) {
@@ -168,12 +163,11 @@ public class RefreshTokenTest {
 					GrantHandlerResult result = event.get();
 					assertEquals("Bearer", result.getTokenType());
 					assertEquals("accessToken1", result.getAccessToken());
-					assertEquals(123L, (long)result.getExpiresIn());
+					assertEquals(900L, (long)result.getExpiresIn());
 					assertEquals("refreshToken1", result.getRefreshToken());
 					assertEquals("scope1", result.getScope());
 				} catch (OAuthError e) {
-					e.printStackTrace();
-					fail();
+					fail(e.getMessage());
 				}
 			}
 		});

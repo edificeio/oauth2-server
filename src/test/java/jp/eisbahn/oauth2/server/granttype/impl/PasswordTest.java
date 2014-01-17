@@ -18,183 +18,211 @@
 
 package jp.eisbahn.oauth2.server.granttype.impl;
 
-//import static org.easymock.EasyMock.createMock;
-//import static org.easymock.EasyMock.expect;
-//import static org.easymock.EasyMock.replay;
-//import static org.junit.Assert.assertEquals;
-//import static org.junit.Assert.assertNull;
-//import static org.junit.Assert.fail;
-//
-//import org.junit.After;
-//import org.junit.Before;
-//import org.junit.Test;
-//
-//import jp.eisbahn.oauth2.server.data.DataHandler;
-//import jp.eisbahn.oauth2.server.exceptions.OAuthError;
-//import jp.eisbahn.oauth2.server.fetcher.clientcredential.ClientCredentialFetcherImpl;
-//import jp.eisbahn.oauth2.server.granttype.GrantHandler.GrantHandlerResult;
-//import jp.eisbahn.oauth2.server.granttype.impl.Password;
-//import jp.eisbahn.oauth2.server.models.AccessToken;
-//import jp.eisbahn.oauth2.server.models.AuthInfo;
-//import jp.eisbahn.oauth2.server.models.Request;
+import static org.easymock.EasyMock.createMock;
+import static org.easymock.EasyMock.expect;
+import static org.easymock.EasyMock.replay;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
+
+import jp.eisbahn.oauth2.server.async.Handler;
+import jp.eisbahn.oauth2.server.data.DataHandlerSync;
+import jp.eisbahn.oauth2.server.exceptions.Try;
+import jp.eisbahn.oauth2.server.mock.MockDataHandler;
+import org.apache.commons.codec.binary.Base64;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
+import jp.eisbahn.oauth2.server.data.DataHandler;
+import jp.eisbahn.oauth2.server.exceptions.OAuthError;
+import jp.eisbahn.oauth2.server.fetcher.clientcredential.ClientCredentialFetcherImpl;
+import jp.eisbahn.oauth2.server.granttype.GrantHandler.GrantHandlerResult;
+import jp.eisbahn.oauth2.server.models.AccessToken;
+import jp.eisbahn.oauth2.server.models.AuthInfo;
+import jp.eisbahn.oauth2.server.models.Request;
+
+import java.io.UnsupportedEncodingException;
 
 public class PasswordTest {
 
-//	private Password target;
-//
-//	@Before
-//	public void setUp() {
-//		target = new Password();
-//		target.setClientCredentialFetcher(new ClientCredentialFetcherImpl());
-//	}
-//
-//	@After
-//	public void tearDown() {
-//		target = null;
-//	}
-//
-//	@Test
-//	public void testHandleRequestUsernameNotFound() throws Exception {
-//		Request request = createRequestMock();
-//		expect(request.getParameter("username")).andReturn(null);
-//		DataHandler dataHandler = createDataHandlerMock(request);
-//		replay(request, dataHandler);
-//		try {
-//			target.handleRequest(dataHandler);
-//			fail("Error.InvalidRequest not occurred.");
-//		} catch (OAuthError.InvalidRequest e) {
-//			assertEquals("'username' not found", e.getDescription());
-//		}
-//	}
-//
-//	@Test
-//	public void testHandleRequestPasswordNotFound() throws Exception {
-//		Request request = createRequestMock();
-//		expect(request.getParameter("username")).andReturn("username1");
-//		expect(request.getParameter("password")).andReturn(null);
-//		DataHandler dataHandler = createDataHandlerMock(request);
-//		replay(request, dataHandler);
-//		try {
-//			target.handleRequest(dataHandler);
-//			fail("Error.InvalidRequest not occurred.");
-//		} catch (OAuthError.InvalidRequest e) {
-//			assertEquals("'password' not found", e.getDescription());
-//		}
-//	}
-//
-//	@Test
-//	public void testHandleRequestUserIdNotFound() throws Exception {
-//		Request request = createRequestMock();
-//		expect(request.getParameter("username")).andReturn("username1");
-//		expect(request.getParameter("password")).andReturn("password1");
-//		DataHandler dataHandler = createDataHandlerMock(request);
-//		expect(dataHandler.getUserId("username1", "password1")).andReturn(null);
-//		replay(request, dataHandler);
-//		try {
-//			target.handleRequest(dataHandler);
-//			fail("Error.InvalidGrant not occurred.");
-//		} catch (OAuthError.InvalidGrant e) {
-//		}
-//	}
-//
-//	@Test
-//	public void testHandleRequestAuthInfoNotFound() throws Exception {
-//		Request request = createRequestMock();
-//		expect(request.getParameter("username")).andReturn("username1");
-//		expect(request.getParameter("password")).andReturn("password1");
-//		expect(request.getParameter("scope")).andReturn("scope1");
-//		DataHandler dataHandler = createDataHandlerMock(request);
+	private Password target;
+
+	@Before
+	public void setUp() {
+		target = new Password();
+		target.setClientCredentialFetcher(new ClientCredentialFetcherImpl());
+	}
+
+	@After
+	public void tearDown() {
+		target = null;
+	}
+
+	@Test
+	public void testHandleRequestUsernameNotFound() throws Exception {
+		Request request = createRequestMock();
+		expect(request.getParameter("username")).andReturn(null);
+		DataHandler dataHandler = createDataHandlerMock(request);
+		replay(request, dataHandler);
+		target.handleRequest(dataHandler, new Handler<Try<OAuthError, GrantHandlerResult>>() {
+			@Override
+			public void handle(Try<OAuthError, GrantHandlerResult> event) {
+				try {
+					event.get();
+					fail("Error.InvalidRequest not occurred.");
+				} catch (OAuthError e) {
+					assertEquals("'username' not found", e.getDescription());
+				}
+			}
+		});
+	}
+
+	@Test
+	public void testHandleRequestPasswordNotFound() throws Exception {
+		Request request = createRequestMock();
+		expect(request.getParameter("username")).andReturn("username1");
+		expect(request.getParameter("password")).andReturn(null);
+		DataHandler dataHandler = createDataHandlerMock(request);
+		replay(request, dataHandler);
+		target.handleRequest(dataHandler, new Handler<Try<OAuthError, GrantHandlerResult>>() {
+			@Override
+			public void handle(Try<OAuthError, GrantHandlerResult> event) {
+				try {
+					event.get();
+					fail("Error.InvalidRequest not occurred.");
+				} catch (OAuthError e) {
+					assertEquals("'password' not found", e.getDescription());
+				}
+			}
+		});
+	}
+
+	@Test
+	public void testHandleRequestUserIdNotFound() throws Exception {
+		Request request = createRequestMock();
+		expect(request.getParameter("username")).andReturn("userNotFound");
+		expect(request.getParameter("password")).andReturn("password1");
+		DataHandlerSync dataHandler = new MockDataHandler(request);
+		replay(request);
+		target.handleRequest(dataHandler, new Handler<Try<OAuthError, GrantHandlerResult>>() {
+			@Override
+			public void handle(Try<OAuthError, GrantHandlerResult> event) {
+				try {
+					event.get();
+					fail("Error.InvalidGrant not occurred.");
+				} catch (OAuthError e) {
+				}
+			}
+		});
+	}
+
+	@Test
+	public void testHandleRequestAuthInfoNotFound() throws Exception {
+		Request request = createRequestMock();
+		expect(request.getParameter("username")).andReturn("authInfoNotFound");
+		expect(request.getParameter("password")).andReturn("password1");
+		expect(request.getParameter("scope")).andReturn("scope1");
+		DataHandlerSync dataHandler = new MockDataHandler(request);
 //		expect(dataHandler.getUserId("username1", "password1")).andReturn("userId1");
 //		expect(dataHandler.createOrUpdateAuthInfo("clientId1", "userId1", "scope1")).andReturn(null);
-//		replay(request, dataHandler);
-//		try {
-//			target.handleRequest(dataHandler);
-//			fail("Error.InvalidGrant not occurred.");
-//		} catch (OAuthError.InvalidGrant e) {
-//		}
-//	}
-//
-//	@Test
-//	public void testHandleRequestClientIdMismatch() throws Exception {
-//		Request request = createRequestMock();
-//		expect(request.getParameter("username")).andReturn("username1");
-//		expect(request.getParameter("password")).andReturn("password1");
-//		expect(request.getParameter("scope")).andReturn("scope1");
-//		DataHandler dataHandler = createDataHandlerMock(request);
-//		expect(dataHandler.getUserId("username1", "password1")).andReturn("userId1");
-//		AuthInfo authInfo = new AuthInfo();
-//		authInfo.setClientId("clientId2");
-//		expect(dataHandler.createOrUpdateAuthInfo("clientId1", "userId1", "scope1")).andReturn(authInfo);
-//		replay(request, dataHandler);
-//		try {
-//			target.handleRequest(dataHandler);
-//			fail("Error.InvalidClient not occurred.");
-//		} catch (OAuthError.InvalidClient e) {
-//		}
-//	}
-//
-//	@Test
-//	public void testHandleRequestSimple() throws Exception {
-//		Request request = createRequestMock();
-//		expect(request.getParameter("username")).andReturn("username1");
-//		expect(request.getParameter("password")).andReturn("password1");
-//		expect(request.getParameter("scope")).andReturn("scope1");
-//		DataHandler dataHandler = createDataHandlerMock(request);
-//		expect(dataHandler.getUserId("username1", "password1")).andReturn("userId1");
-//		AuthInfo authInfo = new AuthInfo();
-//		authInfo.setClientId("clientId1");
-//		expect(dataHandler.createOrUpdateAuthInfo("clientId1", "userId1", "scope1")).andReturn(authInfo);
-//		AccessToken accessToken = new AccessToken();
-//		accessToken.setToken("accessToken1");
-//		expect(dataHandler.createOrUpdateAccessToken(authInfo)).andReturn(accessToken);
-//		replay(request, dataHandler);
-//		GrantHandlerResult result = target.handleRequest(dataHandler);
-//		assertEquals("Bearer", result.getTokenType());
-//		assertEquals("accessToken1", result.getAccessToken());
-//		assertNull(result.getExpiresIn());
-//		assertNull(result.getRefreshToken());
-//		assertNull(result.getScope());
-//	}
-//
-//	@Test
-//	public void testHandleRequestFull() throws Exception {
-//		Request request = createRequestMock();
-//		expect(request.getParameter("username")).andReturn("username1");
-//		expect(request.getParameter("password")).andReturn("password1");
-//		expect(request.getParameter("scope")).andReturn("scope1");
-//		DataHandler dataHandler = createDataHandlerMock(request);
-//		expect(dataHandler.getUserId("username1", "password1")).andReturn("userId1");
-//		AuthInfo authInfo = new AuthInfo();
-//		authInfo.setClientId("clientId1");
-//		authInfo.setRedirectUri("redirectUri1");
-//		authInfo.setRefreshToken("refreshToken1");
-//		authInfo.setScope("scope1");
-//		expect(dataHandler.createOrUpdateAuthInfo("clientId1", "userId1", "scope1")).andReturn(authInfo);
-//		AccessToken accessToken = new AccessToken();
-//		accessToken.setToken("accessToken1");
-//		accessToken.setExpiresIn(123L);
-//		expect(dataHandler.createOrUpdateAccessToken(authInfo)).andReturn(accessToken);
-//		replay(request, dataHandler);
-//		GrantHandlerResult result = target.handleRequest(dataHandler);
-//		assertEquals("Bearer", result.getTokenType());
-//		assertEquals("accessToken1", result.getAccessToken());
-//		assertEquals(123L, (long)result.getExpiresIn());
-//		assertEquals("refreshToken1", result.getRefreshToken());
-//		assertEquals("scope1", result.getScope());
-//	}
-//
-//	private Request createRequestMock() {
-//		Request request = createMock(Request.class);
-//		expect(request.getHeader("Authorization")).andReturn(null);
-//		expect(request.getParameter("client_id")).andReturn("clientId1");
-//		expect(request.getParameter("client_secret")).andReturn("clientSecret1");
-//		return request;
-//	}
-//
-//	private DataHandler createDataHandlerMock(Request request) {
-//		DataHandler dataHandler = createMock(DataHandler.class);
-//		expect(dataHandler.getRequest()).andReturn(request);
-//		return dataHandler;
-//	}
+		replay(request);
+		target.handleRequest(dataHandler, new Handler<Try<OAuthError, GrantHandlerResult>>() {
+			@Override
+			public void handle(Try<OAuthError, GrantHandlerResult> event) {
+				try {
+					event.get();
+					fail("Error.InvalidGrant not occurred.");
+				} catch (OAuthError e) {
+				}
+			}
+		});
+	}
+
+	@Test
+	public void testHandleRequestClientIdMismatch() throws Exception {
+		Request request = createRequestMock();
+		expect(request.getParameter("username")).andReturn("clientFailed");
+		expect(request.getParameter("password")).andReturn("password1");
+		expect(request.getParameter("scope")).andReturn("scope1");
+		DataHandlerSync dataHandler = new MockDataHandler(request);
+		replay(request);
+		target.handleRequest(dataHandler, new Handler<Try<OAuthError, GrantHandlerResult>>() {
+			@Override
+			public void handle(Try<OAuthError, GrantHandlerResult> event) {
+				try {
+					event.get();
+					fail("Error.InvalidClient not occurred.");
+				} catch (OAuthError e) {
+				}
+			}
+		});
+	}
+
+	@Test
+	public void testHandleRequestSimple() throws Exception {
+		Request request = createRequestMock();
+		expect(request.getParameter("username")).andReturn("username1");
+		expect(request.getParameter("password")).andReturn("password1");
+		expect(request.getParameter("scope")).andReturn("scope1");
+		DataHandlerSync dataHandler = new MockDataHandler(request);
+		replay(request);
+		target.handleRequest(dataHandler, new Handler<Try<OAuthError, GrantHandlerResult>>() {
+
+			@Override
+			public void handle(Try<OAuthError, GrantHandlerResult> event) {
+				try {
+					GrantHandlerResult result = event.get();
+					assertEquals("Bearer", result.getTokenType());
+					assertEquals("accessToken1", result.getAccessToken());
+				} catch (OAuthError oAuthError) {
+					fail(oAuthError.getMessage());
+				}
+			}
+		});
+	}
+
+	@Test
+	public void testHandleRequestFull() throws Exception {
+		Request request = createRequestMock();
+		expect(request.getParameter("username")).andReturn("username1");
+		expect(request.getParameter("password")).andReturn("password1");
+		expect(request.getParameter("scope")).andReturn("scope1");
+		DataHandlerSync dataHandler = new MockDataHandler(request);
+		replay(request);
+		target.handleRequest(dataHandler, new Handler<Try<OAuthError, GrantHandlerResult>>() {
+			@Override
+			public void handle(Try<OAuthError, GrantHandlerResult> event) {
+				try {
+					GrantHandlerResult result = event.get();
+					assertEquals("Bearer", result.getTokenType());
+					assertEquals("accessToken1", result.getAccessToken());
+					assertEquals(900L, (long)result.getExpiresIn());
+					assertEquals("refreshToken1", result.getRefreshToken());
+					assertEquals("scope1", result.getScope());
+				} catch (OAuthError oAuthError) {
+					fail(oAuthError.getMessage());
+				}
+			}
+		});
+	}
+
+	private Request createRequestMock() {
+		Request request = createMock(Request.class);
+		try {
+			String basic = new String(Base64.encodeBase64("clientId1:clientSecret1".getBytes()), "UTF-8");
+			expect(request.getHeader("Authorization")).andReturn("Basic " + basic);
+		} catch (UnsupportedEncodingException e) {
+			expect(request.getParameter("client_id")).andReturn("clientId1");
+			expect(request.getParameter("client_secret")).andReturn("clientSecret1");
+		}
+		return request;
+	}
+
+	private DataHandlerSync createDataHandlerMock(Request request) {
+		DataHandlerSync dataHandler = createMock(DataHandlerSync.class);
+		expect(dataHandler.getRequest()).andReturn(request);
+		return dataHandler;
+	}
 
 }

@@ -36,6 +36,7 @@ import jp.eisbahn.oauth2.server.fetcher.clientcredential.ClientCredentialFetcher
 import jp.eisbahn.oauth2.server.granttype.GrantHandler;
 import jp.eisbahn.oauth2.server.granttype.GrantHandlerProvider;
 import jp.eisbahn.oauth2.server.granttype.impl.RefreshToken;
+import jp.eisbahn.oauth2.server.mock.MockDataHandler;
 import jp.eisbahn.oauth2.server.models.AccessToken;
 import jp.eisbahn.oauth2.server.models.AuthInfo;
 import jp.eisbahn.oauth2.server.models.Request;
@@ -135,14 +136,12 @@ public class TokenTest {
 		final Request request = createMock(Request.class);
 		expect(request.getParameter("grant_type")).andReturn("refresh_token");
 		expect(request.getHeader("Authorization")).andReturn(null);
-		expect(request.getParameter("client_id")).andReturn("clientId1");
+		expect(request.getParameter("client_id")).andReturn("clienfalse");
 		expect(request.getParameter("client_secret")).andReturn("clientSecret1");
 		final DataHandlerFactory factory = createMock(DataHandlerFactory.class);
-		final DataHandlerSync dataHandler = createMock(DataHandlerSync.class);
-		expect(dataHandler.validateClient(
-			"clientId1", "clientSecret1", "refresh_token")).andReturn(false);
+		final DataHandlerSync dataHandler = new MockDataHandler(request);
 		expect(factory.create(request)).andReturn(dataHandler);
-		replay(request, factory, dataHandler);
+		replay(request, factory);
 		Token target = createToken(factory);
 		target.handleRequest(request, new Handler<Response>() {
 			@Override
@@ -151,7 +150,7 @@ public class TokenTest {
 				assertEquals(
 						"{\"error\":\"invalid_client\"}",
 						response.getBody());
-				verify(request, factory, dataHandler);
+				verify(request, factory);
 			}
 		});
 	}
@@ -165,27 +164,18 @@ public class TokenTest {
 		expect(request.getParameter("client_secret")).andReturn("clientSecret1").times(2);
 		expect(request.getParameter("refresh_token")).andReturn("refreshToken1");
 		final DataHandlerFactory factory = createMock(DataHandlerFactory.class);
-		final DataHandlerSync dataHandler = createMock(DataHandlerSync.class);
-		expect(dataHandler.validateClient(
-			"clientId1", "clientSecret1", "refresh_token")).andReturn(true);
-		expect(dataHandler.getRequest()).andReturn(request);
-		AuthInfo authInfo = new AuthInfo();
-		authInfo.setClientId("clientId1");
-		expect(dataHandler.getAuthInfoByRefreshToken("refreshToken1")).andReturn(authInfo);
-		AccessToken accessToken = new AccessToken();
-		accessToken.setToken("accessToken1");
-		expect(dataHandler.createOrUpdateAccessToken(authInfo)).andReturn(accessToken);
+		final DataHandlerSync dataHandler = new MockDataHandler(request);
 		expect(factory.create(request)).andReturn(dataHandler);
-		replay(request, factory, dataHandler);
+		replay(request, factory);
 		Token target = createToken(factory);
 		target.handleRequest(request, new Handler<Response>() {
 			@Override
 			public void handle(Response response) {
 				assertEquals(200, response.getCode());
 				assertEquals(
-						"{\"token_type\":\"Bearer\",\"access_token\":\"accessToken1\"}",
+						"{\"token_type\":\"Bearer\",\"access_token\":\"accessToken1\",\"refresh_token\":\"refreshToken1\",\"expires_in\":900,\"scope\":\"scope1\"}",
 						response.getBody());
-				verify(request, factory, dataHandler);
+				verify(request, factory);
 			}
 		});
 	}

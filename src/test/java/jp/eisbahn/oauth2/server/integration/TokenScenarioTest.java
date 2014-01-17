@@ -90,56 +90,56 @@ public class TokenScenarioTest {
 		});
 	}
 
-//	@Test
-//	public void testResourceOwnerPasswordCredentialsGrant() throws Exception {
-//		final Request request = createMock(Request.class);
-//		expect(request.getParameter("grant_type")).andReturn("password");
-//		expect(request.getHeader("Authorization")).andReturn(null).times(2);
-//		expect(request.getParameter("client_id")).andReturn("clientId1").times(2);
-//		expect(request.getParameter("client_secret")).andReturn("clientSecret1").times(2);
-//		expect(request.getParameter("username")).andReturn("username1");
-//		expect(request.getParameter("password")).andReturn("password1");
-//		expect(request.getParameter("scope")).andReturn("scope1");
-//		replay(request);
-//		token.handleRequest(request, new Handler<Response>() {
-//			@Override
-//			public void handle(Response response) {
-//				assertEquals(200, response.getCode());
-//				assertEquals(
-//						"{\"token_type\":\"Bearer\","
-//								+ "\"access_token\":\"accessToken1\","
-//								+ "\"refresh_token\":\"refreshToken1\","
-//								+ "\"expires_in\":900,"
-//								+ "\"scope\":\"scope1\"}",
-//						response.getBody());
-//				verify(request);
-//			}
-//		});
-//	}
-//
-//	@Test
-//	public void testClientCredentialsGrant() throws Exception {
-//		final Request request = createMock(Request.class);
-//		expect(request.getParameter("grant_type")).andReturn("client_credentials");
-//		expect(request.getHeader("Authorization")).andReturn(null).times(2);
-//		expect(request.getParameter("client_id")).andReturn("clientId1").times(2);
-//		expect(request.getParameter("client_secret")).andReturn("clientSecret1").times(2);
-//		expect(request.getParameter("scope")).andReturn("scope1");
-//		replay(request);
-//		token.handleRequest(request, new Handler<Response>() {
-//			@Override
-//			public void handle(Response response) {
-//				assertEquals(200, response.getCode());
-//				assertEquals(
-//						"{\"token_type\":\"Bearer\","
-//								+ "\"access_token\":\"accessToken1\","
-//								+ "\"refresh_token\":\"refreshToken1\","
-//								+ "\"expires_in\":900,"
-//								+ "\"scope\":\"scope1\"}",
-//						response.getBody());
-//				verify(request);
-//			}
-//		});
-//	}
+	@Test
+	public void testResourceOwnerPasswordCredentialsGrant() throws Exception {
+		final Request request = createMock(Request.class);
+		expect(request.getParameter("grant_type")).andReturn("password");
+		expect(request.getHeader("Authorization")).andReturn(null).times(2);
+		expect(request.getParameter("client_id")).andReturn("clientId1").times(2);
+		expect(request.getParameter("client_secret")).andReturn("clientSecret1").times(2);
+		expect(request.getParameter("username")).andReturn("username1");
+		expect(request.getParameter("password")).andReturn("password1");
+		expect(request.getParameter("scope")).andReturn("scope1");
+		replay(request);
+		token.handleRequest(request, new Handler<Response>() {
+			@Override
+			public void handle(Response response) {
+				assertEquals(200, response.getCode());
+				assertEquals(
+						"{\"token_type\":\"Bearer\","
+								+ "\"access_token\":\"accessToken1\","
+								+ "\"refresh_token\":\"refreshToken1\","
+								+ "\"expires_in\":900,"
+								+ "\"scope\":\"scope1\"}",
+						response.getBody());
+				verify(request);
+			}
+		});
+	}
+
+	@Test
+	public void testClientCredentialsGrant() throws Exception {
+		final Request request = createMock(Request.class);
+		expect(request.getParameter("grant_type")).andReturn("client_credentials");
+		expect(request.getHeader("Authorization")).andReturn(null).times(2);
+		expect(request.getParameter("client_id")).andReturn("clientId1").times(2);
+		expect(request.getParameter("client_secret")).andReturn("clientSecret1").times(2);
+		expect(request.getParameter("scope")).andReturn("scope1");
+		replay(request);
+		token.handleRequest(request, new Handler<Response>() {
+			@Override
+			public void handle(Response response) {
+				assertEquals(200, response.getCode());
+				assertEquals(
+						"{\"token_type\":\"Bearer\","
+								+ "\"access_token\":\"accessToken1\","
+								+ "\"refresh_token\":\"refreshToken1\","
+								+ "\"expires_in\":900,"
+								+ "\"scope\":\"scope1\"}",
+						response.getBody());
+				verify(request);
+			}
+		});
+	}
 
 }

@@ -23,6 +23,7 @@ import static org.easymock.EasyMock.expect;
 import static org.easymock.EasyMock.replay;
 import static org.easymock.EasyMock.verify;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 import jp.eisbahn.oauth2.server.async.Handler;
 import jp.eisbahn.oauth2.server.endpoint.ProtectedResource;
@@ -52,16 +53,15 @@ public class ProtectedResourceScenarioTest {
 		target.handleRequest(request, new Handler<Try<OAuthError, Response>>() {
 			@Override
 			public void handle(Try<OAuthError, Response> event) {
-				Response response = null;
 				try {
-					response = event.get();
+					Response response = event.get();
+					assertEquals("userId1", response.getRemoteUser());
+					assertEquals("clientId1", response.getClientId());
+					assertEquals("scope1", response.getScope());
+					verify(request);
 				} catch (OAuthError oAuthError) {
-					oAuthError.printStackTrace();
+					fail(oAuthError.getMessage());
 				}
-				assertEquals("userId1", response.getRemoteUser());
-				assertEquals("clientId1", response.getClientId());
-				assertEquals("scope1", response.getScope());
-				verify(request);
 			}
 		});
 	}

@@ -31,6 +31,7 @@ import java.util.Date;
 
 import jp.eisbahn.oauth2.server.async.Handler;
 import jp.eisbahn.oauth2.server.exceptions.Try;
+import jp.eisbahn.oauth2.server.mock.MockDataHandler;
 import org.junit.Test;
 
 import jp.eisbahn.oauth2.server.data.DataHandlerSync;
@@ -72,12 +73,11 @@ public class ProtectedResourceTest {
 	@Test
 	public void testHandleRequestAccessTokenNotFound() throws Exception {
 		final Request request = createMock(Request.class);
-		expect(request.getHeader("Authorization")).andReturn("Bearer accessToken1").times(2);
-		DataHandlerSync DataHandlerSync = createMock(DataHandlerSync.class);
-		expect(DataHandlerSync.getAccessToken("accessToken1")).andReturn(null);
+		expect(request.getHeader("Authorization")).andReturn("Bearer null").times(2);
+		DataHandlerSync DataHandlerSync = new MockDataHandler(request);
 		DataHandlerFactory DataHandlerSyncFactory = createMock(DataHandlerFactory.class);
 		expect(DataHandlerSyncFactory.create(request)).andReturn(DataHandlerSync);
-		replay(request, DataHandlerSync, DataHandlerSyncFactory);
+		replay(request, DataHandlerSyncFactory);
 		ProtectedResource target = new ProtectedResource();
 		AccessTokenFetcherProvider accessTokenFetcherProvider = new AccessTokenFetcherProvider();
 		accessTokenFetcherProvider.setAccessTokenFetchers(new AccessTokenFetcher[]{
@@ -109,15 +109,11 @@ public class ProtectedResourceTest {
 	@Test
 	public void testHandleRequestAccessTokenExpired() throws Exception {
 		final Request request = createMock(Request.class);
-		expect(request.getHeader("Authorization")).andReturn("Bearer accessToken1").times(2);
-		AccessToken accessToken = new AccessToken();
-		accessToken.setCreatedOn(createDate(-1));
-		accessToken.setExpiresIn(0);
-		DataHandlerSync DataHandlerSync = createMock(DataHandlerSync.class);
-		expect(DataHandlerSync.getAccessToken("accessToken1")).andReturn(accessToken);
+		expect(request.getHeader("Authorization")).andReturn("Bearer expiredToken").times(2);
+		DataHandlerSync DataHandlerSync = new MockDataHandler(request);
 		DataHandlerFactory DataHandlerSyncFactory = createMock(DataHandlerFactory.class);
 		expect(DataHandlerSyncFactory.create(request)).andReturn(DataHandlerSync);
-		replay(request, DataHandlerSync, DataHandlerSyncFactory);
+		replay(request, DataHandlerSyncFactory);
 		ProtectedResource target = new ProtectedResource();
 		AccessTokenFetcherProvider accessTokenFetcherProvider = new AccessTokenFetcherProvider();
 		accessTokenFetcherProvider.setAccessTokenFetchers(new AccessTokenFetcher[]{
@@ -142,17 +138,11 @@ public class ProtectedResourceTest {
 	@Test
 	public void testHandleRequestAuthInfoNotFound() throws Exception {
 		final Request request = createMock(Request.class);
-		expect(request.getHeader("Authorization")).andReturn("Bearer accessToken1").times(2);
-		AccessToken accessToken = new AccessToken();
-		accessToken.setCreatedOn(createDate(0));
-		accessToken.setExpiresIn(3600);
-		accessToken.setAuthId("authId1");
-		DataHandlerSync DataHandlerSync = createMock(DataHandlerSync.class);
-		expect(DataHandlerSync.getAccessToken("accessToken1")).andReturn(accessToken);
-		expect(DataHandlerSync.getAuthInfoById("authId1")).andReturn(null);
+		expect(request.getHeader("Authorization")).andReturn("Bearer authNull").times(2);
+		DataHandlerSync DataHandlerSync = new MockDataHandler(request);
 		DataHandlerFactory DataHandlerSyncFactory = createMock(DataHandlerFactory.class);
 		expect(DataHandlerSyncFactory.create(request)).andReturn(DataHandlerSync);
-		replay(request, DataHandlerSync, DataHandlerSyncFactory);
+		replay(request, DataHandlerSyncFactory);
 		ProtectedResource target = new ProtectedResource();
 		AccessTokenFetcherProvider accessTokenFetcherProvider = new AccessTokenFetcherProvider();
 		accessTokenFetcherProvider.setAccessTokenFetchers(new AccessTokenFetcher[]{
@@ -177,20 +167,11 @@ public class ProtectedResourceTest {
 	@Test
 	public void testHandleRequestValidateClientFailed() throws Exception {
 		final Request request = createMock(Request.class);
-		expect(request.getHeader("Authorization")).andReturn("Bearer accessToken1").times(2);
-		AccessToken accessToken = new AccessToken();
-		accessToken.setCreatedOn(createDate(0));
-		accessToken.setExpiresIn(3600);
-		accessToken.setAuthId("authId1");
-		DataHandlerSync DataHandlerSync = createMock(DataHandlerSync.class);
-		expect(DataHandlerSync.getAccessToken("accessToken1")).andReturn(accessToken);
-		AuthInfo authInfo = new AuthInfo();
-		authInfo.setClientId("clientId1");
-		expect(DataHandlerSync.getAuthInfoById("authId1")).andReturn(authInfo);
-		expect(DataHandlerSync.validateClientById("clientId1")).andReturn(false);
+		expect(request.getHeader("Authorization")).andReturn("Bearer accessToken1clientFailed").times(2);
+		DataHandlerSync DataHandlerSync = new MockDataHandler(request);
 		DataHandlerFactory DataHandlerSyncFactory = createMock(DataHandlerFactory.class);
 		expect(DataHandlerSyncFactory.create(request)).andReturn(DataHandlerSync);
-		replay(request, DataHandlerSync, DataHandlerSyncFactory);
+		replay(request, DataHandlerSyncFactory);
 		ProtectedResource target = new ProtectedResource();
 		AccessTokenFetcherProvider accessTokenFetcherProvider = new AccessTokenFetcherProvider();
 		accessTokenFetcherProvider.setAccessTokenFetchers(new AccessTokenFetcher[]{
@@ -215,22 +196,11 @@ public class ProtectedResourceTest {
 	@Test
 	public void testHandleRequestValidateUserFailed() throws Exception {
 		final Request request = createMock(Request.class);
-		expect(request.getHeader("Authorization")).andReturn("Bearer accessToken1").times(2);
-		AccessToken accessToken = new AccessToken();
-		accessToken.setCreatedOn(createDate(0));
-		accessToken.setExpiresIn(3600);
-		accessToken.setAuthId("authId1");
-		DataHandlerSync DataHandlerSync = createMock(DataHandlerSync.class);
-		expect(DataHandlerSync.getAccessToken("accessToken1")).andReturn(accessToken);
-		AuthInfo authInfo = new AuthInfo();
-		authInfo.setClientId("clientId1");
-		authInfo.setUserId("userId1");
-		expect(DataHandlerSync.getAuthInfoById("authId1")).andReturn(authInfo);
-		expect(DataHandlerSync.validateClientById("clientId1")).andReturn(true);
-		expect(DataHandlerSync.validateUserById("userId1")).andReturn(false);
+		expect(request.getHeader("Authorization")).andReturn("Bearer userFailed").times(2);
+		DataHandlerSync DataHandlerSync = new MockDataHandler(request);
 		DataHandlerFactory DataHandlerSyncFactory = createMock(DataHandlerFactory.class);
 		expect(DataHandlerSyncFactory.create(request)).andReturn(DataHandlerSync);
-		replay(request, DataHandlerSync, DataHandlerSyncFactory);
+		replay(request, DataHandlerSyncFactory);
 		ProtectedResource target = new ProtectedResource();
 		AccessTokenFetcherProvider accessTokenFetcherProvider = new AccessTokenFetcherProvider();
 		accessTokenFetcherProvider.setAccessTokenFetchers(new AccessTokenFetcher[]{
@@ -256,22 +226,10 @@ public class ProtectedResourceTest {
 	public void testHandleRequestSuccess() throws Exception {
 		final Request request = createMock(Request.class);
 		expect(request.getHeader("Authorization")).andReturn("Bearer accessToken1").times(2);
-		AccessToken accessToken = new AccessToken();
-		accessToken.setCreatedOn(createDate(0));
-		accessToken.setExpiresIn(3600);
-		accessToken.setAuthId("authId1");
-		DataHandlerSync DataHandlerSync = createMock(DataHandlerSync.class);
-		expect(DataHandlerSync.getAccessToken("accessToken1")).andReturn(accessToken);
-		AuthInfo authInfo = new AuthInfo();
-		authInfo.setClientId("clientId1");
-		authInfo.setUserId("userId1");
-		authInfo.setScope("scope1");
-		expect(DataHandlerSync.getAuthInfoById("authId1")).andReturn(authInfo);
-		expect(DataHandlerSync.validateClientById("clientId1")).andReturn(true);
-		expect(DataHandlerSync.validateUserById("userId1")).andReturn(true);
+		DataHandlerSync DataHandlerSync = new MockDataHandler(request);
 		DataHandlerFactory DataHandlerSyncFactory = createMock(DataHandlerFactory.class);
 		expect(DataHandlerSyncFactory.create(request)).andReturn(DataHandlerSync);
-		replay(request, DataHandlerSync, DataHandlerSyncFactory);
+		replay(request, DataHandlerSyncFactory);
 		ProtectedResource target = new ProtectedResource();
 		AccessTokenFetcherProvider accessTokenFetcherProvider = new AccessTokenFetcherProvider();
 		accessTokenFetcherProvider.setAccessTokenFetchers(new AccessTokenFetcher[]{

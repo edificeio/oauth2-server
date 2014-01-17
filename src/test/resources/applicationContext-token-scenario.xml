@@ -18,16 +18,16 @@
                 <property name="clientCredentialFetcher" ref="clientCredentialFetcher" />
               </bean>
             </entry>
-            <!--<entry key="password">-->
-              <!--<bean class="jp.eisbahn.oauth2.server.granttype.impl.Password">-->
-                <!--<property name="clientCredentialFetcher" ref="clientCredentialFetcher" />-->
-              <!--</bean>-->
-            <!--</entry>-->
-            <!--<entry key="client_credentials">-->
-              <!--<bean class="jp.eisbahn.oauth2.server.granttype.impl.ClientCredentials">-->
-                <!--<property name="clientCredentialFetcher" ref="clientCredentialFetcher" />-->
-              <!--</bean>-->
-            <!--</entry>-->
+            <entry key="password">
+              <bean class="jp.eisbahn.oauth2.server.granttype.impl.Password">
+                <property name="clientCredentialFetcher" ref="clientCredentialFetcher" />
+              </bean>
+            </entry>
+            <entry key="client_credentials">
+              <bean class="jp.eisbahn.oauth2.server.granttype.impl.ClientCredentials">
+                <property name="clientCredentialFetcher" ref="clientCredentialFetcher" />
+              </bean>
+            </entry>
           </map>
         </property>
       </bean>
