@@ -50,6 +50,9 @@ public class DefaultGrantHandlerProvider extends GrantHandlerProvider {
 		RefreshToken refreshToken = new RefreshToken();
 		refreshToken.setClientCredentialFetcher(fetcher);
 		handlers.put("refresh_token", refreshToken);
+		Password password = new Password();
+		password.setClientCredentialFetcher(fetcher);
+		handlers.put("password", password);
 		setGrantHandlers(handlers);
 	}
 
