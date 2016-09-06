@@ -36,6 +36,7 @@ public class AccessToken {
 	private String token;
 	private long expiresIn;
 	private Date createdOn;
+	private String idToken;
 
 	/**
 	 * Set the ID of the authorization information to relate between the
@@ -103,4 +104,11 @@ public class AccessToken {
 		return createdOn;
 	}
 
+	public String getIdToken() {
+		return idToken;
+	}
+
+	public void setIdToken(String idToken) {
+		this.idToken = idToken;
+	}
 }

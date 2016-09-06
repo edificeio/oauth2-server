@@ -60,6 +60,7 @@ public interface GrantHandler {
 	@JsonSerialize(include = Inclusion.NON_NULL)
 	@JsonPropertyOrder({"token_type",
 		"access_token",
+		"id_token",
 		"refresh_token",
 		"expires_in",
 		"scope"})
@@ -69,6 +70,8 @@ public interface GrantHandler {
 		private String tokenType;
 		@JsonProperty("access_token")
 		private String accessToken;
+		@JsonProperty("id_token")
+		private String idToken;
 		@JsonProperty("expires_in")
 		private Long expiresIn;
 		@JsonProperty("refresh_token")
@@ -155,6 +158,14 @@ public interface GrantHandler {
 		 */
 		public String getScope() {
 			return scope;
+		}
+
+		public String getIdToken() {
+			return idToken;
+		}
+
+		public void setIdToken(String idToken) {
+			this.idToken = idToken;
 		}
 
 	}

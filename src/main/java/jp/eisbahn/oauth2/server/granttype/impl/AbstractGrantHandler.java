@@ -87,6 +87,9 @@ public abstract class AbstractGrantHandler implements GrantHandler {
 				if (StringUtils.isNotEmpty(authInfo.getScope())) {
 					result.setScope(authInfo.getScope());
 				}
+				if (StringUtils.isNotEmpty(accessToken.getIdToken())) {
+					result.setIdToken(accessToken.getIdToken());
+				}
 				handler.handle(result);
 			}
 		});
