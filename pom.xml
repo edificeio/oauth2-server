@@ -22,14 +22,14 @@
   <repository>
     <id>wse</id>
     <name>wse releases</name>
-    <url>http://maven.web-education.net:8081/nexus/content/repositories/releases</url>
+    <url>http://maven.web-education.net/nexus/content/repositories/releases</url>
   </repository>
 
   <!-- Publish snapshots here -->
   <snapshotRepository>
     <id>wse</id>
     <name>wse snapshots</name>
-    <url>http://maven.web-education.net:8081/nexus/content/repositories/snapshots</url>
+    <url>http://maven.web-education.net/nexus/content/repositories/snapshots</url>
   </snapshotRepository>
 </distributionManagement>
  <build>
