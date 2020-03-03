@@ -23,6 +23,8 @@ import java.util.Date;
 import jp.eisbahn.oauth2.server.data.DataHandler;
 import jp.eisbahn.oauth2.server.data.DataHandlerFactory;
 import jp.eisbahn.oauth2.server.data.DataHandlerSync;
+import jp.eisbahn.oauth2.server.exceptions.Try;
+import jp.eisbahn.oauth2.server.exceptions.OAuthError.AccessDenied;
 import jp.eisbahn.oauth2.server.models.AccessToken;
 import jp.eisbahn.oauth2.server.models.AuthInfo;
 import jp.eisbahn.oauth2.server.models.Request;
@@ -47,7 +49,7 @@ public class DummyDataHandlerFactoryImpl implements DataHandlerFactory {
 		}
 
 		@Override
-		public String getUserId(String username, String password) {
+		public Try<AccessDenied, String> getUserId(String username, String password) {
 			return null;
 		}
 

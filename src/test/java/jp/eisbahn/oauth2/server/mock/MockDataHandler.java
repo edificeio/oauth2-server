@@ -1,6 +1,8 @@
 package jp.eisbahn.oauth2.server.mock;
 
 import jp.eisbahn.oauth2.server.data.DataHandlerSync;
+import jp.eisbahn.oauth2.server.exceptions.Try;
+import jp.eisbahn.oauth2.server.exceptions.OAuthError.AccessDenied;
 import jp.eisbahn.oauth2.server.models.AccessToken;
 import jp.eisbahn.oauth2.server.models.AuthInfo;
 import jp.eisbahn.oauth2.server.models.Request;
@@ -22,9 +24,11 @@ public class MockDataHandler extends DataHandlerSync {
 	}
 
 	@Override
-	public String getUserId(String username, String password) {
-		if (username == null || password == null || username.contains("userNotFound")) return null;
-		return username;
+	public Try<AccessDenied, String> getUserId(String username, String password) {
+		if (username == null || password == null || username.contains("userNotFound")) {
+			return new Try<AccessDenied, String>(new AccessDenied("user.not.found"));
+		}
+		return new Try<AccessDenied, String>(username);
 	}
 
 	@Override

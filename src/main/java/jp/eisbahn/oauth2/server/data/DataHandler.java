@@ -19,6 +19,8 @@
 package jp.eisbahn.oauth2.server.data;
 
 import jp.eisbahn.oauth2.server.async.Handler;
+import jp.eisbahn.oauth2.server.exceptions.Try;
+import jp.eisbahn.oauth2.server.exceptions.OAuthError.AccessDenied;
 import jp.eisbahn.oauth2.server.models.AccessToken;
 import jp.eisbahn.oauth2.server.models.AuthInfo;
 import jp.eisbahn.oauth2.server.models.Request;
@@ -143,7 +145,7 @@ public abstract class DataHandler {
 	 * @return The user's ID string. If the user is not found, you must return
 	 * a null value or an empty string.
 	 */
-	public abstract void getUserId(String username, String password, Handler<String> handler);
+	public abstract void getUserId(String username, String password, Handler<Try<AccessDenied, String>> handler);
 
 	/**
 	 * Create or update an Authorization information.

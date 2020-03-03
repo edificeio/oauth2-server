@@ -23,6 +23,8 @@ import static org.junit.Assert.*;
 import org.easymock.EasyMock;
 import org.junit.Test;
 
+import jp.eisbahn.oauth2.server.exceptions.OAuthError.AccessDenied;
+import jp.eisbahn.oauth2.server.exceptions.Try;
 import jp.eisbahn.oauth2.server.models.AccessToken;
 import jp.eisbahn.oauth2.server.models.AuthInfo;
 import jp.eisbahn.oauth2.server.models.Request;
@@ -42,7 +44,7 @@ public class DataHandlerTest {
 		}
 
 		@Override
-		public String getUserId(String userName, String password) {
+		public Try<AccessDenied, String> getUserId(String userName, String password) {
 			return null;
 		}
 

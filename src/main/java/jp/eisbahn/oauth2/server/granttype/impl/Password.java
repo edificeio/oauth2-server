@@ -20,6 +20,8 @@ package jp.eisbahn.oauth2.server.granttype.impl;
 
 import jp.eisbahn.oauth2.server.async.Handler;
 import jp.eisbahn.oauth2.server.exceptions.Try;
+import jp.eisbahn.oauth2.server.exceptions.OAuthError.AccessDenied;
+
 import org.apache.commons.lang3.StringUtils;
 
 import jp.eisbahn.oauth2.server.data.DataHandler;
@@ -52,10 +54,11 @@ public class Password extends AbstractGrantHandler {
 			String username = getParameter(request, "username");
 			String password = getParameter(request, "password");
 
-			dataHandler.getUserId(username, password, new Handler<String>() {
+			dataHandler.getUserId(username, password, new Handler<Try<AccessDenied, String>>() {
 				@Override
-				public void handle(String userId) {
+				public void handle(Try<AccessDenied, String> tryUserId) {
 					try {
+						final String userId = tryUserId.get();
 						if (StringUtils.isEmpty(userId)) {
 							throw new OAuthError.InvalidGrant("");
 						}
