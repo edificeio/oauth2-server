@@ -38,6 +38,7 @@ public class AuthInfo {
 	private String refreshToken;
 	private String code;
 	private String redirectUri;
+	private String nonce;
 
 	/**
 	 * Set the ID of this model.
@@ -155,6 +156,22 @@ public class AuthInfo {
 	 */
 	public String getRedirectUri() {
 		return redirectUri;
+	}
+
+	/**
+	 * Set the nonce string.
+	 * @param nonce The nonce string.
+	 */
+	public void setNonce(String nonce) {
+		this.nonce = nonce;
+	}
+
+	/**
+	 * Retrieve the nonce string.
+	 * @return The nonce string.
+	 */
+	public String getNonce() {
+		return nonce;
 	}
 
 }
