@@ -2,6 +2,7 @@ package jp.eisbahn.oauth2.server.mock;
 
 import jp.eisbahn.oauth2.server.data.DataHandlerSync;
 import jp.eisbahn.oauth2.server.exceptions.Try;
+import jp.eisbahn.oauth2.server.exceptions.OAuthError;
 import jp.eisbahn.oauth2.server.exceptions.OAuthError.AccessDenied;
 import jp.eisbahn.oauth2.server.models.AccessToken;
 import jp.eisbahn.oauth2.server.models.AuthInfo;
@@ -29,6 +30,16 @@ public class MockDataHandler extends DataHandlerSync {
 			return new Try<AccessDenied, String>(new AccessDenied("user.not.found"));
 		}
 		return new Try<AccessDenied, String>(username);
+	}
+
+	@Override
+	public Try<OAuthError, String> getUserIdByAssertion(String assertion) {
+		return null;
+	}
+
+	@Override
+	public Try<AccessDenied, String> getUserIdByCustomToken(String customToken) {
+		return null;
 	}
 
 	@Override

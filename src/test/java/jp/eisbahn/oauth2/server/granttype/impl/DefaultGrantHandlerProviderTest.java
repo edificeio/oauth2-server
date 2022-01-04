@@ -32,9 +32,11 @@ public class DefaultGrantHandlerProviderTest {
 	public void testSimple() throws Exception {
 		DefaultGrantHandlerProvider target = new DefaultGrantHandlerProvider();
 		Map<String, GrantHandler> handlers = target.getHandlers();
-		assertEquals(4, handlers.size());
+		assertEquals(6, handlers.size());
 		assertTrue(handlers.get("authorization_code") instanceof AuthorizationCode);
 		assertTrue(handlers.get("password") instanceof Password);
+		assertTrue(handlers.get("saml2") instanceof Saml2);
+		assertTrue(handlers.get("custom_token") instanceof CustomToken);
 		assertTrue(handlers.get("refresh_token") instanceof RefreshToken);
 		assertTrue(handlers.get("client_credentials") instanceof ClientCredentials);
 	}

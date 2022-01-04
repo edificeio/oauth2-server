@@ -24,6 +24,7 @@ import org.easymock.EasyMock;
 import org.junit.Test;
 
 import jp.eisbahn.oauth2.server.exceptions.OAuthError.AccessDenied;
+import jp.eisbahn.oauth2.server.exceptions.OAuthError;
 import jp.eisbahn.oauth2.server.exceptions.Try;
 import jp.eisbahn.oauth2.server.models.AccessToken;
 import jp.eisbahn.oauth2.server.models.AuthInfo;
@@ -45,6 +46,16 @@ public class DataHandlerTest {
 
 		@Override
 		public Try<AccessDenied, String> getUserId(String userName, String password) {
+			return null;
+		}
+
+		@Override
+		public Try<OAuthError, String> getUserIdByAssertion(String assertion) {
+			return null;
+		}
+
+		@Override
+		public Try<AccessDenied, String> getUserIdByCustomToken(String customToken) {
 			return null;
 		}
 

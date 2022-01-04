@@ -440,4 +440,32 @@ public abstract class OAuthError extends Exception {
 
 	}
 
+	/**
+	 * This means that the specified assertion contains multiple usable identity vector.
+	 * For instance, this error type is "multiple_vector_choice".
+	 * 
+	 * @author Damien BOISSIN
+	 *
+	 */
+	public static class MultipleVectorChoice extends OAuthError {
+
+		/**
+		 * Initialize this instance. The HTTP status code is set as 401.
+		 * @param description The error description string.
+		 */
+		public MultipleVectorChoice(String description) {
+			super(401, description);
+		}
+
+		/**
+		 * Retrieve the error type string.
+		 * This method returns the fixed string "insufficient_scope".
+		 */
+		@Override
+		public String getType() {
+			return "multiple_vector_choice";
+		}
+
+	}
+
 }

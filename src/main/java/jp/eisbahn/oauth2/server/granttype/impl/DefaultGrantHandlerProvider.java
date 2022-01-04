@@ -56,6 +56,10 @@ public class DefaultGrantHandlerProvider extends GrantHandlerProvider {
 		Password password = new Password();
 		password.setClientCredentialFetcher(fetcher);
 		handlers.put("password", password);
+		Saml2 saml2 = new Saml2();
+		handlers.put("saml2", saml2);
+		CustomToken customToken = new CustomToken();
+		handlers.put("custom_token", customToken);
 		setGrantHandlers(handlers);
 	}
 

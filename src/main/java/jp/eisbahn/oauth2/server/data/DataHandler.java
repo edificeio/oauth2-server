@@ -19,6 +19,7 @@
 package jp.eisbahn.oauth2.server.data;
 
 import jp.eisbahn.oauth2.server.async.Handler;
+import jp.eisbahn.oauth2.server.exceptions.OAuthError;
 import jp.eisbahn.oauth2.server.exceptions.Try;
 import jp.eisbahn.oauth2.server.exceptions.OAuthError.AccessDenied;
 import jp.eisbahn.oauth2.server.models.AccessToken;
@@ -146,6 +147,32 @@ public abstract class DataHandler {
 	 * a null value or an empty string.
 	 */
 	public abstract void getUserId(String username, String password, Handler<Try<AccessDenied, String>> handler);
+
+	/**
+	 * Retrieve the user's ID from saml2 assertion.
+	 * This method is used for the Resource Owner Password Credential Grant only.
+	 * Normally, you should implement this process like retrieving the user's ID
+	 * from your database and checking the password.
+	 * If the null value or the empty string is returned from this method as the
+	 * result, the error type "invalid_grant" will be sent to the client.
+	 * @param assertion saml2 assertion
+	 * @return The user's ID string. If the user is not found, you must return
+	 * a null value or an empty string.
+	 */
+	public abstract void getUserIdByAssertion(String assertion, Handler<Try<OAuthError, String>> handler);
+
+		/**
+	 * Retrieve the user's ID from custom token
+	 * This method is used for the Resource Owner Password Credential Grant only.
+	 * Normally, you should implement this process like retrieving the user's ID
+	 * from your database and checking the password.
+	 * If the null value or the empty string is returned from this method as the
+	 * result, the error type "invalid_grant" will be sent to the client.
+	 * @param customToken custom token authentication
+	 * @return The user's ID string. If the user is not found, you must return
+	 * a null value or an empty string.
+	 */
+	public abstract void getUserIdByCustomToken(String customToken, Handler<Try<AccessDenied, String>> handler);
 
 	/**
 	 * Create or update an Authorization information.
