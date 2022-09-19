@@ -29,6 +29,7 @@ import jp.eisbahn.oauth2.server.exceptions.OAuthError;
 import jp.eisbahn.oauth2.server.models.AuthInfo;
 import jp.eisbahn.oauth2.server.models.ClientCredential;
 import jp.eisbahn.oauth2.server.models.Request;
+import jp.eisbahn.oauth2.server.models.UserData;
 
 /**
  * This class is an implementation for processing the Custom token
@@ -53,17 +54,17 @@ public class CustomToken extends AbstractGrantHandler {
 		try {
 			final String customToken = getParameter(request, "custom_token");
 
-			dataHandler.getUserIdByCustomToken(customToken, new Handler<Try<AccessDenied, String>>() {
+			dataHandler.getUserIdByCustomToken(customToken, new Handler<Try<AccessDenied, UserData>>() {
 				@Override
-				public void handle(Try<AccessDenied, String> tryUserId) {
+				public void handle(Try<AccessDenied, UserData> tryUserId) {
 					try {
-						final String userId = tryUserId.get();
-						if (StringUtils.isEmpty(userId)) {
+						final UserData userData = tryUserId.get();
+						if (userData == null || StringUtils.isEmpty(userData.getId())) {
 							throw new OAuthError.InvalidGrant("");
 						}
 						String scope = request.getParameter("scope");
 
-						dataHandler.createOrUpdateAuthInfo(clientId, userId, scope, new Handler<AuthInfo>() {
+						dataHandler.createOrUpdateAuthInfo(clientId, userData.getId(), scope, new Handler<AuthInfo>() {
 							@Override
 							public void handle(AuthInfo authInfo) {
 								try {
@@ -79,6 +80,7 @@ public class CustomToken extends AbstractGrantHandler {
 										@Override
 										public void handle(GrantHandlerResult result) {
 											if (result != null) {
+												result.setUserData(userData);
 												handler.handle(new Try<OAuthError, GrantHandlerResult>(result));
 											} else {
 												handler.handle(new Try<OAuthError, GrantHandlerResult>(

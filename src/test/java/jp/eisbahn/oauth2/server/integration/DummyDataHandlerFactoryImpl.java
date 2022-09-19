@@ -29,6 +29,7 @@ import jp.eisbahn.oauth2.server.exceptions.OAuthError.AccessDenied;
 import jp.eisbahn.oauth2.server.models.AccessToken;
 import jp.eisbahn.oauth2.server.models.AuthInfo;
 import jp.eisbahn.oauth2.server.models.Request;
+import jp.eisbahn.oauth2.server.models.UserData;
 
 public class DummyDataHandlerFactoryImpl implements DataHandlerFactory {
 
@@ -55,13 +56,13 @@ public class DummyDataHandlerFactoryImpl implements DataHandlerFactory {
 		}
 
 		@Override
-		public Try<OAuthError, String> getUserIdByAssertion(String assertion) {
-			return new Try<OAuthError, String>("userId1");
+		public Try<OAuthError, UserData> getUserIdByAssertion(String assertion) {
+			return new Try<OAuthError, UserData>(new UserData("userId1"));
 		}
 
 		@Override
-		public Try<AccessDenied, String> getUserIdByCustomToken(String customToken) {
-			return new Try<AccessDenied, String>("userId1");
+		public Try<AccessDenied, UserData> getUserIdByCustomToken(String customToken) {
+			return new Try<AccessDenied, UserData>(new UserData("userId1"));
 		}
 
 		@Override

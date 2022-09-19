@@ -29,6 +29,7 @@ import jp.eisbahn.oauth2.server.exceptions.Try;
 import jp.eisbahn.oauth2.server.models.AccessToken;
 import jp.eisbahn.oauth2.server.models.AuthInfo;
 import jp.eisbahn.oauth2.server.models.Request;
+import jp.eisbahn.oauth2.server.models.UserData;
 
 public class DataHandlerTest {
 
@@ -50,12 +51,12 @@ public class DataHandlerTest {
 		}
 
 		@Override
-		public Try<OAuthError, String> getUserIdByAssertion(String assertion) {
+		public Try<OAuthError, UserData> getUserIdByAssertion(String assertion) {
 			return null;
 		}
 
 		@Override
-		public Try<AccessDenied, String> getUserIdByCustomToken(String customToken) {
+		public Try<AccessDenied, UserData> getUserIdByCustomToken(String customToken) {
 			return null;
 		}
 

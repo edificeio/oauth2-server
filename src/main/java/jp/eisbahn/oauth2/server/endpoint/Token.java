@@ -29,6 +29,7 @@ import jp.eisbahn.oauth2.server.granttype.GrantHandlerProvider;
 import jp.eisbahn.oauth2.server.granttype.GrantHandler.GrantHandlerResult;
 import jp.eisbahn.oauth2.server.models.ClientCredential;
 import jp.eisbahn.oauth2.server.models.Request;
+import jp.eisbahn.oauth2.server.models.UserData;
 import jp.eisbahn.oauth2.server.utils.Util;
 
 import org.apache.commons.lang3.StringUtils;
@@ -130,7 +131,8 @@ public class Token {
 							@Override
 							public void handle(Try<OAuthError, GrantHandlerResult> handlerResult) {
 								try {
-									respHandler.handle(new Response(200, Util.toJson(handlerResult.get())));
+									GrantHandlerResult ghr = handlerResult.get();
+									respHandler.handle(new Response(200, Util.toJson(ghr), ghr.getUserData()));
 								} catch (OAuthError e) {
 									respHandler.handle(new Response(e.getCode(), Util.toJson(e)));
 								}
@@ -158,6 +160,7 @@ public class Token {
 
 		private int code;
 		private String body;
+		private final UserData userData;
 
 		/**
 		 * Initialize this instance with arguments passed.
@@ -165,9 +168,14 @@ public class Token {
 		 * @param body The JSON string which has a token information.
 		 */
 		public Response(int code, String body) {
+			this(code, body, null);
+		}
+
+		public Response(int code, String body, UserData userData) {
 			super();
 			this.code = code;
 			this.body = body;
+			this.userData = userData;
 		}
 
 		/**
@@ -189,6 +197,10 @@ public class Token {
 		 */
 		public String getBody() {
 			return body;
+		}
+
+		public UserData getUserData() {
+			return userData;
 		}
 
 	}

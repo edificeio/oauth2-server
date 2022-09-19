@@ -7,6 +7,7 @@ import jp.eisbahn.oauth2.server.exceptions.Try;
 import jp.eisbahn.oauth2.server.models.AccessToken;
 import jp.eisbahn.oauth2.server.models.AuthInfo;
 import jp.eisbahn.oauth2.server.models.Request;
+import jp.eisbahn.oauth2.server.models.UserData;
 
 public abstract class DataHandlerSync extends DataHandler {
 
@@ -34,21 +35,21 @@ public abstract class DataHandlerSync extends DataHandler {
 
 	@Override
 	public void getUserIdByAssertion(String assertion,
-			Handler<Try<OAuthError, String>> handler) {
+			Handler<Try<OAuthError, UserData>> handler) {
 		handler.handle(getUserIdByAssertion(assertion));
 
 	}
 
-	public abstract Try<OAuthError, String> getUserIdByAssertion(String assertion);
+	public abstract Try<OAuthError, UserData> getUserIdByAssertion(String assertion);
 
 	@Override
 	public void getUserIdByCustomToken(String customToken,
-			Handler<Try<AccessDenied, String>> handler) {
+			Handler<Try<AccessDenied, UserData>> handler) {
 		handler.handle(getUserIdByCustomToken(customToken));
 
 	}
 
-	public abstract Try<AccessDenied, String> getUserIdByCustomToken(String customToken);
+	public abstract Try<AccessDenied, UserData> getUserIdByCustomToken(String customToken);
 
 	@Override
 	public void createOrUpdateAuthInfo(String clientId, String userId,

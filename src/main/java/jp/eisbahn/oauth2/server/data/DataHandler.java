@@ -25,6 +25,7 @@ import jp.eisbahn.oauth2.server.exceptions.OAuthError.AccessDenied;
 import jp.eisbahn.oauth2.server.models.AccessToken;
 import jp.eisbahn.oauth2.server.models.AuthInfo;
 import jp.eisbahn.oauth2.server.models.Request;
+import jp.eisbahn.oauth2.server.models.UserData;
 
 /**
  * This abstract class defines some functions to provide and store each
@@ -159,7 +160,7 @@ public abstract class DataHandler {
 	 * @return The user's ID string. If the user is not found, you must return
 	 * a null value or an empty string.
 	 */
-	public abstract void getUserIdByAssertion(String assertion, Handler<Try<OAuthError, String>> handler);
+	public abstract void getUserIdByAssertion(String assertion, Handler<Try<OAuthError, UserData>> handler);
 
 		/**
 	 * Retrieve the user's ID from custom token
@@ -172,7 +173,7 @@ public abstract class DataHandler {
 	 * @return The user's ID string. If the user is not found, you must return
 	 * a null value or an empty string.
 	 */
-	public abstract void getUserIdByCustomToken(String customToken, Handler<Try<AccessDenied, String>> handler);
+	public abstract void getUserIdByCustomToken(String customToken, Handler<Try<AccessDenied, UserData>> handler);
 
 	/**
 	 * Create or update an Authorization information.

@@ -22,7 +22,9 @@ import jp.eisbahn.oauth2.server.async.Handler;
 import jp.eisbahn.oauth2.server.data.DataHandler;
 import jp.eisbahn.oauth2.server.exceptions.OAuthError;
 import jp.eisbahn.oauth2.server.exceptions.Try;
+import jp.eisbahn.oauth2.server.models.UserData;
 
+import org.codehaus.jackson.annotate.JsonIgnore;
 import org.codehaus.jackson.annotate.JsonProperty;
 import org.codehaus.jackson.annotate.JsonPropertyOrder;
 import org.codehaus.jackson.map.annotate.JsonSerialize;
@@ -77,6 +79,8 @@ public interface GrantHandler {
 		@JsonProperty("refresh_token")
 		private String refreshToken;
 		private String scope;
+		@JsonIgnore
+		private UserData userData;
 
 		/**
 		 * Initialize this instance with these arguments.
@@ -166,6 +170,14 @@ public interface GrantHandler {
 
 		public void setIdToken(String idToken) {
 			this.idToken = idToken;
+		}
+
+		public UserData getUserData() {
+			return userData;
+		}
+
+		public void setUserData(UserData userData) {
+			this.userData = userData;
 		}
 
 	}
