@@ -39,6 +39,7 @@ public class AuthInfo {
 	private String code;
 	private String redirectUri;
 	private String nonce;
+	private String logoutUrl;
 
 	/**
 	 * Set the ID of this model.
@@ -174,4 +175,11 @@ public class AuthInfo {
 		return nonce;
 	}
 
+	public void setLogoutUrl(String logoutUrl) {
+		this.logoutUrl = logoutUrl;
+	}
+
+	public String getLogoutUrl() {
+		return logoutUrl;
+	}
 }
