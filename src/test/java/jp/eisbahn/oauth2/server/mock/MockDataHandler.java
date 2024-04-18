@@ -1,5 +1,6 @@
 package jp.eisbahn.oauth2.server.mock;
 
+import jp.eisbahn.oauth2.server.async.Handler;
 import jp.eisbahn.oauth2.server.data.DataHandlerSync;
 import jp.eisbahn.oauth2.server.exceptions.Try;
 import jp.eisbahn.oauth2.server.exceptions.OAuthError;
@@ -159,6 +160,12 @@ public class MockDataHandler extends DataHandlerSync {
 	@Override
 	public boolean validateUserById(String userId) {
 		return !"userFailed".equals(userId);
+	}
+
+	@Override
+	public void getUserIdByAssertionJwt(String clientId, String assertion, Handler<Try<OAuthError, UserData>> handler) {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Unimplemented method 'getUserIdByAssertionJwt'");
 	}
 
 }
