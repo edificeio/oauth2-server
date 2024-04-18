@@ -24,6 +24,7 @@ import org.easymock.EasyMock;
 import org.junit.Test;
 
 import jp.eisbahn.oauth2.server.exceptions.OAuthError.AccessDenied;
+import jp.eisbahn.oauth2.server.async.Handler;
 import jp.eisbahn.oauth2.server.exceptions.OAuthError;
 import jp.eisbahn.oauth2.server.exceptions.Try;
 import jp.eisbahn.oauth2.server.models.AccessToken;
@@ -104,6 +105,13 @@ public class DataHandlerTest {
 		@Override
 		public boolean validateUserById(String userId) {
 			return true;
+		}
+
+		@Override
+		public void getUserIdByAssertionJwt(String clientId, String assertion,
+				Handler<Try<OAuthError, UserData>> handler) {
+			// TODO Auto-generated method stub
+			throw new UnsupportedOperationException("Unimplemented method 'getUserIdByAssertionJwt'");
 		}
 
 	}

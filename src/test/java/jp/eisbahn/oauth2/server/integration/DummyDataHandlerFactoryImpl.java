@@ -20,6 +20,7 @@ package jp.eisbahn.oauth2.server.integration;
 
 import java.util.Date;
 
+import jp.eisbahn.oauth2.server.async.Handler;
 import jp.eisbahn.oauth2.server.data.DataHandler;
 import jp.eisbahn.oauth2.server.data.DataHandlerFactory;
 import jp.eisbahn.oauth2.server.data.DataHandlerSync;
@@ -137,6 +138,13 @@ public class DummyDataHandlerFactoryImpl implements DataHandlerFactory {
 		@Override
 		public boolean validateUserById(String userId) {
 			return true;
+		}
+
+		@Override
+		public void getUserIdByAssertionJwt(String clientId, String assertion,
+				Handler<Try<OAuthError, UserData>> handler) {
+			// TODO Auto-generated method stub
+			throw new UnsupportedOperationException("Unimplemented method 'getUserIdByAssertionJwt'");
 		}
 
 	}

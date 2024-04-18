@@ -62,6 +62,9 @@ public class DefaultGrantHandlerProvider extends GrantHandlerProvider {
 		CustomToken customToken = new CustomToken();
 		customToken.setClientCredentialFetcher(fetcher);
 		handlers.put("custom_token", customToken);
+		JwtBearer jwtBearer = new JwtBearer();
+		jwtBearer.setClientCredentialFetcher(fetcher);
+		handlers.put("urn:ietf:params:oauth:grant-type:jwt-bearer", jwtBearer);
 		setGrantHandlers(handlers);
 	}
 

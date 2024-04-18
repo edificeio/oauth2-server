@@ -290,4 +290,7 @@ public abstract class DataHandler {
 	 */
 	public abstract void getAuthInfoById(String id, Handler<AuthInfo> handler);
 
+	public abstract void getUserIdByAssertionJwt(String clientId, String assertion,
+			final Handler<Try<OAuthError, UserData>> handler);
+
 }
