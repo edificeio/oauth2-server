@@ -19,6 +19,7 @@
 package jp.eisbahn.oauth2.server.integration;
 
 import java.util.Date;
+import java.util.List;
 
 import jp.eisbahn.oauth2.server.async.Handler;
 import jp.eisbahn.oauth2.server.data.DataHandler;
@@ -145,6 +146,23 @@ public class DummyDataHandlerFactoryImpl implements DataHandlerFactory {
 				Handler<Try<OAuthError, UserData>> handler) {
 			// TODO Auto-generated method stub
 			throw new UnsupportedOperationException("Unimplemented method 'getUserIdByAssertionJwt'");
+		}
+
+		public void getAuthorizationsBySessionId(String sessionId, Handler<List<AuthInfo>> handler) {
+			// TODO Auto-generated method stub
+			throw new UnsupportedOperationException("Unimplemented method 'getAuthorizationsBySessionId'");
+		}
+
+		@Override
+		public void getTokensByAuthId(String authId, Handler<List<AccessToken>> handler) {
+			// TODO Auto-generated method stub
+			throw new UnsupportedOperationException("Unimplemented method 'getTokensByAuthId'");
+		}
+
+		@Override
+		public void deleteTokensByAuthId(String authId) {
+			// TODO Auto-generated method stub
+			throw new UnsupportedOperationException("Unimplemented method 'deleteTokensByAuthId'");
 		}
 
 	}
