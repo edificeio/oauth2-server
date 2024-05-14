@@ -1,5 +1,6 @@
 package jp.eisbahn.oauth2.server.mock;
 
+import jp.eisbahn.oauth2.server.async.Handler;
 import jp.eisbahn.oauth2.server.data.DataHandlerSync;
 import jp.eisbahn.oauth2.server.exceptions.Try;
 import jp.eisbahn.oauth2.server.exceptions.OAuthError;
@@ -11,6 +12,7 @@ import jp.eisbahn.oauth2.server.models.UserData;
 
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 
 public class MockDataHandler extends DataHandlerSync {
 
@@ -159,6 +161,24 @@ public class MockDataHandler extends DataHandlerSync {
 	@Override
 	public boolean validateUserById(String userId) {
 		return !"userFailed".equals(userId);
+	}
+
+	@Override
+	public void getAuthorizationsBySessionId(String sessionId, Handler<List<AuthInfo>> handler) {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Unimplemented method 'getAuthorizationsBySessionId'");
+	}
+
+	@Override
+	public void getTokensByAuthId(String authId, Handler<List<AccessToken>> handler) {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Unimplemented method 'getTokensByAuthId'");
+	}
+
+	@Override
+	public void deleteTokensByAuthId(String authId) {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Unimplemented method 'deleteTokensByAuthId'");
 	}
 
 }
