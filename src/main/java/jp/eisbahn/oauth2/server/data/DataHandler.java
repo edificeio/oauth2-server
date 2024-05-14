@@ -18,6 +18,8 @@
 
 package jp.eisbahn.oauth2.server.data;
 
+import java.util.List;
+
 import jp.eisbahn.oauth2.server.async.Handler;
 import jp.eisbahn.oauth2.server.exceptions.OAuthError;
 import jp.eisbahn.oauth2.server.exceptions.Try;
@@ -292,5 +294,11 @@ public abstract class DataHandler {
 
 	public abstract void getUserIdByAssertionJwt(String clientId, String assertion,
 			final Handler<Try<OAuthError, UserData>> handler);
+	
+	public abstract void getAuthorizationsBySessionId(String sessionId, Handler<List<AuthInfo>> handler); 
+
+	public abstract void getTokensByAuthId(String authId, Handler<List<AccessToken>> handler);
+
+	public abstract void deleteTokensByAuthId(String authId);
 
 }
