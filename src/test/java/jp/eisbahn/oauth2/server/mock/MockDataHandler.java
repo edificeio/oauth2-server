@@ -12,6 +12,7 @@ import jp.eisbahn.oauth2.server.models.UserData;
 
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 
 public class MockDataHandler extends DataHandlerSync {
 
@@ -21,7 +22,7 @@ public class MockDataHandler extends DataHandlerSync {
 
 	@Override
 	public boolean validateClient(String clientId, String clientSecret,
-								  String grantType) {
+			String grantType) {
 		return !(clientId.contains("false") ||
 				clientSecret.contains("false") || grantType.contains("false"));
 	}
@@ -46,8 +47,9 @@ public class MockDataHandler extends DataHandlerSync {
 
 	@Override
 	public AuthInfo createOrUpdateAuthInfo(String clientId, String userId,
-										   String scope) {
-		if ("authInfoNotFound".equals(clientId) || "authInfoNotFound".equals(userId)) return null;
+			String scope) {
+		if ("authInfoNotFound".equals(clientId) || "authInfoNotFound".equals(userId))
+			return null;
 		AuthInfo authInfo = new AuthInfo();
 		if ("clientFailed".equals(userId)) {
 			authInfo.setClientId("");
@@ -70,7 +72,8 @@ public class MockDataHandler extends DataHandlerSync {
 
 	@Override
 	public AuthInfo getAuthInfoByCode(String code) {
-		if (code == null || code.contains("null")) return null;
+		if (code == null || code.contains("null"))
+			return null;
 		AuthInfo authInfo = new AuthInfo();
 		authInfo.setClientId(code.replaceAll("code", "clientId"));
 		if (code.contains("missingRedirect")) {
@@ -86,7 +89,8 @@ public class MockDataHandler extends DataHandlerSync {
 
 	@Override
 	public AuthInfo getAuthInfoByRefreshToken(String refreshToken) {
-		if (refreshToken == null || refreshToken.contains("null")) return null;
+		if (refreshToken == null || refreshToken.contains("null"))
+			return null;
 		AuthInfo authInfo = new AuthInfo();
 		if (refreshToken.contains("clientFailed")) {
 			authInfo.setClientId("clientFailed");
@@ -103,7 +107,8 @@ public class MockDataHandler extends DataHandlerSync {
 	@Override
 	public String getClientUserId(String clientId, String clientSecret) {
 		if (clientId == null || clientSecret == null ||
-				"null".equals(clientId) || "null".equals(clientSecret)) return null;
+				"null".equals(clientId) || "null".equals(clientSecret))
+			return null;
 		return "userId1";
 	}
 
@@ -140,7 +145,8 @@ public class MockDataHandler extends DataHandlerSync {
 
 	@Override
 	public AuthInfo getAuthInfoById(String id) {
-		if (id == null || "null".equals(id)) return null;
+		if (id == null || "null".equals(id))
+			return null;
 		AuthInfo authInfo = new AuthInfo();
 		authInfo.setClientId(id.replaceAll("auth", "client"));
 		if (id.contains("userFailed")) {
@@ -166,6 +172,23 @@ public class MockDataHandler extends DataHandlerSync {
 	public void getUserIdByAssertionJwt(String clientId, String assertion, Handler<Try<OAuthError, UserData>> handler) {
 		// TODO Auto-generated method stub
 		throw new UnsupportedOperationException("Unimplemented method 'getUserIdByAssertionJwt'");
+	}
+
+	public void getAuthorizationsBySessionId(String sessionId, Handler<List<AuthInfo>> handler) {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Unimplemented method 'getAuthorizationsBySessionId'");
+	}
+
+	@Override
+	public void getTokensByAuthId(String authId, Handler<List<AccessToken>> handler) {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Unimplemented method 'getTokensByAuthId'");
+	}
+
+	@Override
+	public void deleteTokensByAuthId(String authId) {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Unimplemented method 'deleteTokensByAuthId'");
 	}
 
 }
