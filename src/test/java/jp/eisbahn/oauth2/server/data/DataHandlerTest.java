@@ -20,6 +20,7 @@ package jp.eisbahn.oauth2.server.data;
 
 import static org.junit.Assert.*;
 
+import jp.eisbahn.oauth2.server.async.Handler;
 import org.easymock.EasyMock;
 import org.junit.Test;
 
@@ -32,12 +33,29 @@ import jp.eisbahn.oauth2.server.models.AuthInfo;
 import jp.eisbahn.oauth2.server.models.Request;
 import jp.eisbahn.oauth2.server.models.UserData;
 
+import java.util.List;
+
 public class DataHandlerTest {
 
 	private class Target extends DataHandlerSync {
 
 		public Target(Request request) {
 			super(request);
+		}
+
+		@Override
+		public void getAuthorizationsBySessionId(String sessionId, Handler<List<AuthInfo>> handler) {
+
+		}
+
+		@Override
+		public void getTokensByAuthId(String authId, Handler<List<AccessToken>> handler) {
+
+		}
+
+		@Override
+		public void deleteTokensByAuthId(String authId) {
+
 		}
 
 		@Override
