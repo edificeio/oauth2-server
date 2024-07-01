@@ -227,6 +227,9 @@ public abstract class OAuthError extends Exception {
 			super(401, description);
 		}
 
+		public AccessDenied(String description, int code) {
+			super(code, description);
+		}
 		/**
 		 * Retrieve the error type string.
 		 * This method returns the fixed string "access_denied".
