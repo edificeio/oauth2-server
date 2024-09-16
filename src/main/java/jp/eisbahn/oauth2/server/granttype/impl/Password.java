@@ -29,6 +29,7 @@ import jp.eisbahn.oauth2.server.exceptions.OAuthError;
 import jp.eisbahn.oauth2.server.models.AuthInfo;
 import jp.eisbahn.oauth2.server.models.ClientCredential;
 import jp.eisbahn.oauth2.server.models.Request;
+import jp.eisbahn.oauth2.server.models.UserData;
 
 /**
  * This class is an implementation for processing the Resource Owner Password
@@ -80,6 +81,8 @@ public class Password extends AbstractGrantHandler {
 										@Override
 										public void handle(GrantHandlerResult result) {
 											if (result != null) {
+												final UserData userData = new UserData(userId);
+												result.setUserData(userData);
 												handler.handle(new Try<OAuthError, GrantHandlerResult>(result));
 											} else {
 												handler.handle(new Try<OAuthError, GrantHandlerResult>(
