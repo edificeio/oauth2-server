@@ -40,6 +40,7 @@ public class AuthInfo {
 	private String redirectUri;
 	private String nonce;
 	private String logoutUrl;
+	private String sessionId;
 
 	/**
 	 * Set the ID of this model.
@@ -181,5 +182,13 @@ public class AuthInfo {
 
 	public String getLogoutUrl() {
 		return logoutUrl;
+	}
+
+	public String getSessionId() {
+		return sessionId;
+	}
+
+	public void setSessionId(String sessionId) {
+		this.sessionId = sessionId;
 	}
 }
