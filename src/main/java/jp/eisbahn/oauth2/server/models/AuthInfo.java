@@ -41,6 +41,11 @@ public class AuthInfo {
 	private String nonce;
 	private String logoutUrl;
 	private String sessionId;
+	private String userAgent;
+	private String deviceType;
+	private String deviceName;
+	private String osName;
+	private String osVersion;
 
 	/**
 	 * Set the ID of this model.
@@ -190,5 +195,45 @@ public class AuthInfo {
 
 	public void setSessionId(String sessionId) {
 		this.sessionId = sessionId;
+	}
+
+	public String getUserAgent() {
+		return userAgent;
+	}
+
+	public void setUserAgent(String userAgent) {
+		this.userAgent = userAgent;
+	}
+
+	public String getOsName() {
+		return osName;
+	}
+
+	public void setOsName(String osName) {
+		this.osName = osName;
+	}
+
+	public String getDeviceName() {
+		return deviceName;
+	}
+
+	public void setDeviceName(String deviceName) {
+		this.deviceName = deviceName;
+	}
+
+	public String getDeviceType() {
+		return deviceType;
+	}
+
+	public void setDeviceType(String deviceType) {
+		this.deviceType = deviceType;
+	}
+
+	public String getOsVersion() {
+		return osVersion;
+	}
+
+	public void setOsVersion(String osVersion) {
+		this.osVersion = osVersion;
 	}
 }
