@@ -20,6 +20,7 @@ package jp.eisbahn.oauth2.server.granttype.impl;
 
 import jp.eisbahn.oauth2.server.async.Handler;
 import jp.eisbahn.oauth2.server.exceptions.Try;
+import jp.eisbahn.oauth2.server.models.UserData;
 import org.apache.commons.lang3.StringUtils;
 
 import jp.eisbahn.oauth2.server.data.DataHandler;
@@ -72,6 +73,8 @@ public class ClientCredentials extends AbstractGrantHandler {
 									@Override
 									public void handle(GrantHandlerResult result) {
 										if (result != null) {
+											final UserData ud = new UserData(userId);
+											result.setUserData(ud);
 											handler.handle(new Try<OAuthError, GrantHandlerResult>(result));
 										} else {
 											handler.handle(new Try<OAuthError, GrantHandlerResult>(

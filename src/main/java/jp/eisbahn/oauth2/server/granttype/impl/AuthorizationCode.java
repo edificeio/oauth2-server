@@ -18,6 +18,7 @@
 
 package jp.eisbahn.oauth2.server.granttype.impl;
 
+import jp.eisbahn.oauth2.server.models.UserData;
 import org.apache.commons.lang3.StringUtils;
 
 import jp.eisbahn.oauth2.server.async.Handler;
@@ -72,6 +73,8 @@ public class AuthorizationCode extends AbstractGrantHandler {
 							@Override
 							public void handle(GrantHandlerResult result) {
 								if (result != null) {
+									final UserData ud = new UserData(authInfo.getUserId());
+									result.setUserData(ud);
 									handler.handle(new Try<OAuthError, GrantHandlerResult>(result));
 								} else {
 									handler.handle(new Try<OAuthError, GrantHandlerResult>(
